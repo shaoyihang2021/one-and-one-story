@@ -204,10 +204,11 @@ export class UI {
       if (["Enter", "NumpadEnter", "KeyX", "Space"].includes(event.code)) {
         const items = getItems();
         if (!items.length) return;
-        if (items.includes(document.activeElement)) {
+        const active = document.activeElement;
+        if (active && screen.contains(active) && active.tagName === "BUTTON") {
           if (event.code === "KeyX") {
             event.preventDefault();
-            document.activeElement.click();
+            active.click();
           }
           return;
         }
@@ -228,7 +229,13 @@ export class UI {
 
   bindSkipKeys(handler) {
     const listener = (event) => {
-      if (["Escape", "Enter", "NumpadEnter", "Space", "KeyX"].includes(event.code)) {
+      if (event.code === "Escape") {
+        event.preventDefault();
+        handler();
+        return;
+      }
+      if (["Enter", "NumpadEnter", "Space", "KeyX"].includes(event.code)) {
+        if (event.target instanceof Element && event.target.closest("button")) return;
         event.preventDefault();
         handler();
       }
@@ -708,6 +715,7 @@ export class UI {
         <div class="help-row"><span>Rosie</span><span class="keys"><span class="kbd">A</span><span class="kbd">D</span><span class="kbd">W</span></span></div>
         <div class="help-row"><span>Restart</span><span class="keys"><span class="kbd">R</span></span></div>
         <div class="help-row"><span>Pause</span><span class="keys"><span class="kbd">Esc</span></span></div>
+        <div class="help-row"><span>Sound</span><span class="keys"><span class="kbd">M</span></span></div>
       `
       : `
         <div class="help-row"><span>Move</span><span class="keys"><span class="kbd">←</span><span class="kbd">→</span></span></div>

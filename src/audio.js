@@ -174,7 +174,7 @@ export class AudioManager {
       this.ambienceTarget = 1;
       return;
     }
-    this.stopAmbience(false);
+    this.stopAmbience(true);
     this.ambienceName = name;
     const audio = new Audio(new URL(AMBIENCE_FILES[name], AUDIO_ROOT).href);
     audio.loop = true;
