@@ -1,4 +1,5 @@
-const AUDIO_ROOT = new URL("../assets/audio/", import.meta.url);
+const EMBEDDED = globalThis.__ONE_AND_ONE_EMBEDDED__;
+const AUDIO_ROOT = new URL("assets/audio/", document.baseURI);
 
 const SFX_FILES = {
   "jump-josh": "jump-josh.mp3",
@@ -59,6 +60,25 @@ export class AudioManager {
     return this.context;
   }
 
+  fileUrl(file) {
+    return EMBEDDED?.files?.[`assets/audio/${file}`] || new URL(file, AUDIO_ROOT).href;
+  }
+
+  async audioBytes(url) {
+    if (url.startsWith("data:")) {
+      const comma = url.indexOf(",");
+      const header = url.slice(5, comma);
+      if (!header.includes("base64")) throw new Error("Expected a base64 audio payload.");
+      const binary = atob(url.slice(comma + 1));
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+      return bytes.buffer;
+    }
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Could not load ${url} (${response.status})`);
+    return response.arrayBuffer();
+  }
+
   async unlock() {
     const ctx = this.ensureContext();
     if (!ctx) return;
@@ -83,8 +103,7 @@ export class AudioManager {
       const entries = Object.entries(SFX_FILES);
       await Promise.all(entries.map(async ([name, file]) => {
         try {
-          const response = await fetch(new URL(file, AUDIO_ROOT));
-          const data = await response.arrayBuffer();
+          const data = await this.audioBytes(this.fileUrl(file));
           const buffer = await ctx.decodeAudioData(data);
           this.buffers.set(name, buffer);
         } catch (error) {
@@ -120,7 +139,7 @@ export class AudioManager {
     if (!MUSIC_FILES[name]) return null;
     let entry = this.music.get(name);
     if (!entry) {
-      const audio = new Audio(new URL(MUSIC_FILES[name], AUDIO_ROOT).href);
+      const audio = new Audio(this.fileUrl(MUSIC_FILES[name]));
       audio.loop = true;
       audio.preload = "auto";
       entry = { audio, mix: 0, target: 0, name };
@@ -176,7 +195,7 @@ export class AudioManager {
     }
     this.stopAmbience(true);
     this.ambienceName = name;
-    const audio = new Audio(new URL(AMBIENCE_FILES[name], AUDIO_ROOT).href);
+    const audio = new Audio(this.fileUrl(AMBIENCE_FILES[name]));
     audio.loop = true;
     audio.preload = "auto";
     const promise = audio.play();

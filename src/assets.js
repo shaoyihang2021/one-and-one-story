@@ -1,4 +1,5 @@
-const IMAGE_ROOT = new URL("../assets/img/", import.meta.url);
+const EMBEDDED = globalThis.__ONE_AND_ONE_EMBEDDED__;
+const IMAGE_ROOT = new URL("assets/img/", document.baseURI);
 
 export const IMAGE_MANIFEST = {
   tileset: "tileset.png",
@@ -98,14 +99,15 @@ export async function loadImages(onProgress) {
       onProgress?.(done / entries.length);
       resolve();
     };
-    img.src = new URL(path, IMAGE_ROOT).href;
+    img.src = EMBEDDED?.files?.[`assets/img/${path}`] || new URL(path, IMAGE_ROOT).href;
   })));
 
   return images;
 }
 
 export async function loadLevels() {
-  const url = new URL("../data/levels.json", import.meta.url);
+  if (EMBEDDED?.levels) return EMBEDDED.levels;
+  const url = new URL("data/levels.json", document.baseURI);
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Could not load level data (${response.status})`);
   return response.json();

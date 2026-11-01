@@ -1,4 +1,5 @@
 import { input } from "./input.js";
+import { assetUrl } from "./embedded.js";
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -131,7 +132,8 @@ export class UI {
   }
 
   audioMarkup() {
-    return `<button class="icon-round js-audio" type="button" aria-label="Toggle sound"><img src="assets/img/ui/${this.muted ? "icon-audio-off" : "icon-audio-on"}.png" alt=""></button>`;
+    const icon = assetUrl(`assets/img/ui/${this.muted ? "icon-audio-off" : "icon-audio-on"}.png`);
+    return `<button class="icon-round js-audio" type="button" aria-label="Toggle sound"><img src="${icon}" alt=""></button>`;
   }
 
   backMarkup(label = "Back") {
@@ -299,7 +301,7 @@ export class UI {
     this.hudLevel.style.visibility = label ? "visible" : "hidden";
     this.hudSwitch.classList.toggle("is-hidden", !switchVisible);
     this.hudRestart.classList.toggle("is-hidden", !restartVisible);
-    this.hudSwitchIcon.src = `assets/img/ui/${switchToRosie ? "icon-switch-j2r" : "icon-switch-r2j"}.png`;
+    this.hudSwitchIcon.src = assetUrl(`assets/img/ui/${switchToRosie ? "icon-switch-j2r" : "icon-switch-r2j"}.png`);
     this.touchLayout = touchLayout;
     this.buildTouch(touchLayout);
   }
@@ -371,9 +373,9 @@ export class UI {
 
   refreshAudioButtons() {
     for (const img of document.querySelectorAll(".js-audio img")) {
-      img.src = `assets/img/ui/${this.muted ? "icon-audio-off" : "icon-audio-on"}.png`;
+      img.src = assetUrl(`assets/img/ui/${this.muted ? "icon-audio-off" : "icon-audio-on"}.png`);
     }
-    this.hudAudioIcon.src = `assets/img/ui/${this.muted ? "icon-audio-off" : "icon-audio-on"}.png`;
+    this.hudAudioIcon.src = assetUrl(`assets/img/ui/${this.muted ? "icon-audio-off" : "icon-audio-on"}.png`);
     this.hudAudio.setAttribute("aria-label", this.muted ? "Turn sound on" : "Turn sound off");
   }
 
@@ -395,7 +397,7 @@ export class UI {
   showLoading(progress = 0) {
     const screen = this.showScreen("loading", "loading", `
       <div class="loading-inner">
-        <img class="loading-logo" src="assets/img/ui/logo-cream.png" alt="One and One Story">
+        <img class="loading-logo" src="${assetUrl("assets/img/ui/logo-cream.png")}" alt="One and One Story">
         <div class="loading-bar"><span></span></div>
         <div class="loading-label"></div>
       </div>`);
@@ -415,7 +417,7 @@ export class UI {
   showError(message) {
     this.showScreen("error", "loading", `
       <div class="loading-inner">
-        <img class="loading-logo" src="assets/img/ui/logo-cream.png" alt="One and One Story">
+        <img class="loading-logo" src="${assetUrl("assets/img/ui/logo-cream.png")}" alt="One and One Story">
         <div class="loading-label">${esc(message)}</div>
       </div>`);
   }
@@ -432,7 +434,7 @@ export class UI {
     onHelp,
     onFullscreen,
   }) {
-    const smoke = `assets/img/ui/smoke${1 + Math.floor(Math.random() * 3)}.png`;
+    const smoke = assetUrl(`assets/img/ui/smoke${1 + Math.floor(Math.random() * 3)}.png`);
     const lock = bonus ? "" : ICON.lock;
     const fallingMarkup = falling
       ? '<div class="falling-layer"><div class="falling-character josh"></div><div class="falling-character rosie"></div></div>'
@@ -446,8 +448,8 @@ export class UI {
         ${this.topbar()}
         <div class="menu-content">
           <div class="logo-wrap">
-            <img class="logo-blur" src="assets/img/ui/logo-cream-blur.png" alt="">
-            <img class="logo" src="assets/img/ui/logo-cream.png" alt="One and One Story">
+            <img class="logo-blur" src="${assetUrl("assets/img/ui/logo-cream-blur.png")}" alt="">
+            <img class="logo" src="${assetUrl("assets/img/ui/logo-cream.png")}" alt="One and One Story">
           </div>
           <div class="menu-tagline">a story in eight chapters</div>
           <div class="menu-nav">
@@ -541,7 +543,7 @@ export class UI {
       <div class="screen-content">
         ${this.topbar({ back: "Back" })}
         <div class="credits-content">
-          <img class="credits-logo" src="assets/img/ui/logo-cream.png" alt="One and One Story">
+          <img class="credits-logo" src="${assetUrl("assets/img/ui/logo-cream.png")}" alt="One and One Story">
           <div class="credits-body">
             <div class="credits-row"><dt>Game design & programming</dt><dd>Mattia “MaTX” Traverso</dd></div>
             <div class="credits-row"><dt>Art</dt><dd>Gabriele Bonis</dd></div>
@@ -558,7 +560,7 @@ export class UI {
           <span>FlashPunk · Armor Games · 2011</span>
           <span>Web edition</span>
         </div>
-        ${achievement ? `<div class="achievement"><img src="assets/img/ui/achievement.png" alt="Bonus Mode Unlocked"></div>` : ""}
+        ${achievement ? `<div class="achievement"><img src="${assetUrl("assets/img/ui/achievement.png")}" alt="Bonus Mode Unlocked"></div>` : ""}
       </div>
     `);
 
@@ -574,7 +576,7 @@ export class UI {
   }
 
   showTitle({ texts, onDone }) {
-    const smoke = `assets/img/ui/smoke${1 + Math.floor(Math.random() * 3)}.png`;
+    const smoke = assetUrl(`assets/img/ui/smoke${1 + Math.floor(Math.random() * 3)}.png`);
     const screen = this.showScreen("title", "title", `
       <div class="screen-bg"></div>
       <div class="screen-shade"></div>
@@ -624,14 +626,14 @@ export class UI {
   }
 
   showQuote({ onDone }) {
-    const smoke = `assets/img/ui/smoke${1 + Math.floor(Math.random() * 3)}.png`;
+    const smoke = assetUrl(`assets/img/ui/smoke${1 + Math.floor(Math.random() * 3)}.png`);
     const screen = this.showScreen("quote", "quote", `
       <div class="screen-bg"></div>
       <div class="screen-shade"></div>
       <img class="title-smoke" src="${smoke}" alt="" style="top:28%;left:-15%;">
       <div class="screen-content">
         ${this.topbar()}
-        <img class="quote-img" src="assets/img/ui/aristotle.png" alt="Love is one soul in two bodies. Aristotle.">
+        <img class="quote-img" src="${assetUrl("assets/img/ui/aristotle.png")}" alt="Love is one soul in two bodies. Aristotle.">
         <button class="skip-btn" type="button">Skip ${ICON.skip}</button>
       </div>
     `);
@@ -659,7 +661,7 @@ export class UI {
       <div class="screen-shade"></div>
       <div class="screen-content">
         ${this.topbar()}
-        <img class="endcard-img" src="assets/img/ui/end-title.png" alt="The End">
+        <img class="endcard-img" src="${assetUrl("assets/img/ui/end-title.png")}" alt="The End">
         <button class="skip-btn" type="button">Skip ${ICON.skip}</button>
       </div>
     `);

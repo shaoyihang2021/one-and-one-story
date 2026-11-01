@@ -6,6 +6,10 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "dev": "node server.mjs"
+    "dev": "node server.mjs",
+    "build:single": "node tools/build-standalone.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }
