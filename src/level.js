@@ -30,6 +30,7 @@ export class LevelScene {
     this.deathTimer = 0;
     this.deadPlayer = null;
     this.narrativeText = "";
+    this.narrativeAlign = "center";
 
     this.josh = null;
     this.rosie = null;
@@ -80,6 +81,14 @@ export class LevelScene {
     return this.kind === "coop" ? "coop" : "single";
   }
 
+  get hudLevelRight() {
+    return this.kind === "coop" ? 25 : 10;
+  }
+
+  get hudHelpVisible() {
+    return !(this.kind === "coop" && this.index === 10);
+  }
+
   build() {
     this.buildBackground();
     this.buildPlayers();
@@ -90,13 +99,27 @@ export class LevelScene {
     this.applyLevelText();
 
     this.app.refreshHUD();
-    this.app.ui.setNarrative(this.narrativeText);
+    this.app.ui.setNarrative(this.narrativeText, this.narrativeAlign);
   }
 
   buildBackground() {
-    const mapping = this.kind === "coop"
-      ? BACKGROUND_BY_COOP[this.index] || BACKGROUND_BY_COOP[0]
-      : BACKGROUND_BY_LEVEL[this.index] || BACKGROUND_BY_LEVEL[0];
+    let mapping;
+    if (this.kind === "coop") {
+      if (this.index === 10) {
+        mapping = BACKGROUND_BY_COOP[10];
+      } else {
+        const moods = ["dawn", "twilight", "sunset", "night", "noir", "foggy"];
+        const seasons = ["winter", "other", "autumn"];
+        const mood = moods[Math.floor(Math.random() * moods.length)];
+        mapping = {
+          mood,
+          season: seasons[Math.floor(Math.random() * seasons.length)],
+          lights: mood !== "foggy",
+        };
+      }
+    } else {
+      mapping = BACKGROUND_BY_LEVEL[this.index] || BACKGROUND_BY_LEVEL[0];
+    }
     this.background = new Background(this.data, mapping, this.images);
     this.app.audio.playAmbience(this.background.ambience);
   }
@@ -161,6 +184,7 @@ export class LevelScene {
         rosie.visible = false;
         rosie.following = false;
         this.switchAvailable = false;
+        this.narrativeAlign = "left";
         this.setNarrative(this.tutorialJumped
           ? "I died when i fell... I don't like dying.\nI tried again, pressing X or UP"
           : "And there I was, moving thanks to the arrow keys.");
@@ -302,10 +326,11 @@ export class LevelScene {
     if (LEVEL_TEXT[this.index]) this.setNarrative(LEVEL_TEXT[this.index]);
   }
 
-  setNarrative(text) {
-    if (this.narrativeText === text) return;
+  setNarrative(text, align = this.narrativeAlign) {
+    const changed = this.narrativeText !== text || this.narrativeAlign !== align;
+    this.narrativeAlign = align;
     this.narrativeText = text;
-    this.app.ui.setNarrative(text);
+    if (changed) this.app.ui.setNarrative(text, align);
   }
 
   refreshSwitchHud() {
@@ -1028,6 +1053,7 @@ export class LevelScene {
       if (text.alpha <= 0) continue;
       ctx.save();
       ctx.globalAlpha = text.alpha;
+      ctx.globalCompositeOperation = "hard-light";
       ctx.drawImage(text.image, text.x, text.y);
       ctx.restore();
     }

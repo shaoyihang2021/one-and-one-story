@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#14100d">
-  <meta name="description" content="One and One Story — a modern HTML5 edition of the 2011 Flash game by Mattia Traverso.">
+  <meta name="description" content="One and One Story — a faithful HTML5 edition of the 2011 Flash game by Mattia Traverso.">
   <title>One and One Story</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
@@ -19,28 +19,30 @@
       <div id="narrative" class="narrative" aria-live="polite"></div>
 
       <div id="hud" class="hud is-hidden" aria-hidden="true">
-        <div class="hud-cluster">
-          <button id="hudPause" class="hud-btn" type="button" aria-label="Pause">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-          </button>
-          <button id="hudRestart" class="hud-btn" type="button" aria-label="Restart level">
-            <img src="assets/img/ui/icon-restart.png" alt="">
-          </button>
-          <button id="hudAudio" class="hud-btn" type="button" aria-label="Toggle sound">
-            <img id="hudAudioIcon" src="assets/img/ui/icon-audio-on.png" alt="">
-          </button>
-        </div>
-        <button id="hudSwitch" class="switch-btn is-hidden" type="button" aria-label="Switch character">
+        <button id="hudQuit" class="hud-icon hud-quit" type="button" aria-label="Quit to menu">
+          <img src="assets/img/ui/icon-exit.png" alt="">
+        </button>
+        <button id="hudAudio" class="hud-icon hud-audio" type="button" aria-label="Toggle sound">
+          <img id="hudAudioIcon" src="assets/img/ui/icon-audio-on.png" alt="">
+        </button>
+        <button id="hudRestart" class="hud-icon hud-restart" type="button" aria-label="Restart level">
+          <img src="assets/img/ui/icon-restart.png" alt="">
+        </button>
+        <button id="hudSwitch" class="hud-icon hud-switch is-hidden" type="button" aria-label="Switch character">
           <img id="hudSwitchIcon" src="assets/img/ui/icon-switch-j2r.png" alt="">
-          <span class="switch-key">Z / C</span>
+        </button>
+        <button id="hudHelp" class="hud-icon hud-help" type="button" aria-label="Open game guide">
+          <img src="assets/img/ui/icon-help.png" alt="">
         </button>
         <div class="hud-level" id="hudLevel"></div>
       </div>
 
       <div id="touch" class="touch is-hidden" aria-hidden="true"></div>
+      <div id="focusPause" class="focus-pause is-hidden" aria-hidden="true">
+        <img src="assets/img/ui/pause-screen.png" alt="Game paused. Click anywhere to resume.">
+      </div>
       <div id="fade" class="fade"></div>
     </div>
-    <div class="rotate-hint">Rotate your device for a larger view</div>
   </div>
   <noscript>This game needs JavaScript enabled.</noscript>
   <script type="module" src="src/main.js"></script>

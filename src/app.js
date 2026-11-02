@@ -18,13 +18,14 @@ export class App {
     this.ui = new UI(this);
     this.canvas = document.getElementById("game");
     this.ctx = this.canvas.getContext("2d");
-    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.imageSmoothingEnabled = true;
 
     this.images = null;
     this.levels = null;
     this.scene = null;
     this.mode = "boot";
     this.paused = false;
+    this.focusPaused = false;
     this.transitioning = false;
     this.tutorialJumped = false;
     this.secretFalling = false;
@@ -53,30 +54,25 @@ export class App {
         this.toggleMute();
         return;
       }
-      if (this.mode !== "game") return;
-
-      if (event.code === "Escape" || event.code === "KeyP") {
-        if (!this.paused && !this.transitioning && !this.ui.screenName) {
+      if (event.code === "Escape" && !this.focusPaused) {
+        if (this.mode === "title" || this.mode === "quote" || this.mode === "endcard") {
           event.preventDefault();
-          this.openPause();
+          this.presentMenu({ falling: false });
+          return;
         }
-        return;
       }
-
+      if (this.mode !== "game") return;
       if (event.code === "KeyR" && !this.paused && !this.transitioning) {
         event.preventDefault();
         this.restartCurrentLevel();
       }
     });
 
-    const autoPause = () => {
-      if (this.mode === "game" && !this.paused && !this.transitioning && !this.ui.screenName) {
-        this.openPause();
-      }
-    };
-    window.addEventListener("blur", autoPause);
+    window.addEventListener("blur", () => this.pauseForFocus());
+    window.addEventListener("focus", () => this.resumeFromFocus());
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden) autoPause();
+      if (document.hidden) this.pauseForFocus();
+      else this.resumeFromFocus();
     });
   }
 
@@ -174,6 +170,9 @@ export class App {
       restartVisible: scene.hudRestartVisible,
       touchLayout: scene.hudTouchLayout,
       narrative: scene.narrativeText,
+      narrativeAlign: scene.narrativeAlign,
+      levelRight: scene.hudLevelRight,
+      helpVisible: scene.hudHelpVisible,
     };
   }
 
@@ -183,16 +182,11 @@ export class App {
     }
   }
 
-  primaryMenuLabel() {
-    if (this.save.complete) return "Play Again";
-    if (this.save.chapter > 0 || this.save.level > 0) return "Continue";
-    return "Begin";
-  }
-
   presentMenu({ falling = false } = {}) {
     this.mode = "menu";
     this.scene = null;
     this.paused = false;
+    this.focusPaused = false;
     this.secretFalling = Boolean(falling);
     input.clear();
     input.setCapturing(false);
@@ -201,21 +195,24 @@ export class App {
     this.audio.playMusic("menu");
 
     this.ui.showMenu({
-      primaryLabel: this.primaryMenuLabel(),
       bonus: this.save.bonus,
-      chapterCount: this.save.chapter,
       falling: this.secretFalling,
-      onPrimary: () => {
-        if (this.save.complete) this.startNewStory();
-        else if (this.save.chapter > 0 || this.save.level > 0) this.continueStory();
-        else this.startNewStory();
-      },
+      onStart: () => this.startFromMenu(),
       onChapters: () => this.presentChapters(),
-      onCoop: () => this.startCoop(0),
+      onBonus: () => this.startCoop(0),
       onCredits: () => this.presentCredits({ achievement: false }),
-      onHelp: () => this.showHelpFromMenu(),
-      onFullscreen: () => this.toggleFullscreen(),
+      onSecret: () => this.unlockBonusBySecret(),
     });
+  }
+
+  startFromMenu() {
+    if (this.save.chapter === 0) {
+      this.mode = "menu";
+      this.audio.playMusic("menu");
+      this.ui.showMenuTip({ onDone: () => this.startStoryIntro() });
+    } else {
+      this.startStoryIntro();
+    }
   }
 
   presentChapters() {
@@ -229,7 +226,6 @@ export class App {
     input.setCapturing(false);
     this.ui.showChapters({
       unlocked: this.save.chapter,
-      chapters: CHAPTERS,
       onSelect: (chapterNumber) => this.enterChapter(chapterNumber),
       onBack: () => this.presentMenu({ falling: false }),
     });
@@ -258,38 +254,21 @@ export class App {
     });
   }
 
-  showHelpFromMenu() {
-    this.ui.showHelp({
-      coop: false,
-      onClose: () => this.presentMenu({ falling: this.secretFalling }),
-    });
-  }
-
-  async startNewStory() {
+  startStoryIntro() {
     this.save.patch({ complete: false, level: 0 });
     this.tutorialJumped = false;
     this.secretFalling = false;
+    this.mode = "quote";
+    this.scene = null;
+    this.paused = false;
+    this.focusPaused = false;
+    input.clear();
+    input.setCapturing(false);
+    this.audio.stopAmbience(true);
+    this.audio.setDucked(false);
     this.audio.playMusic("game");
-    await this.transitionTo(() => {
-      this.mode = "quote";
-      this.scene = null;
-      this.paused = false;
-      this.audio.stopAmbience(true);
-      this.ui.showQuote({
-        onDone: () => {
-          this.transitionTo(() => this.loadStoryLevelNow(0));
-        },
-      });
-    });
-  }
-
-  continueStory() {
-    const level = Math.max(0, Math.min(19, this.save.level || 0));
-    this.tutorialJumped = false;
-    this.secretFalling = false;
-    this.audio.playMusic("game");
-    this.goToStoryEntry(level, {
-      showTitle: level > 0 && TITLE_LEVELS.has(level),
+    this.ui.showQuote({
+      onDone: () => this.loadStoryLevelNow(0),
     });
   }
 
@@ -388,10 +367,7 @@ export class App {
   }
 
   startCoop(index = 0) {
-    if (!this.save.bonus) {
-      this.ui.menuHint("Finish the story to unlock this game mode.");
-      return;
-    }
+    if (!this.save.bonus) return;
     this.secretFalling = false;
     this.audio.playMusic("game");
     this.goToCoopEntry(index);
@@ -486,47 +462,38 @@ export class App {
     });
   }
 
-  openPause() {
-    if (this.mode !== "game" || !this.scene || this.paused || this.transitioning) return;
+  pauseForFocus() {
+    if (this.mode === "boot" || this.focusPaused) return;
+    if (this.ui.screenName === "loading" || this.ui.screenName === "error") return;
+    this.focusPaused = true;
     this.paused = true;
     this.accumulator = 0;
     input.clear();
     input.setCapturing(false);
-    this.audio.setDucked(true);
-    this.showPauseOverlay();
+    this.audio.setSuspended(true);
+    this.ui.showFocusPause();
   }
 
-  showPauseOverlay() {
-    if (!this.scene) return;
-    const label = this.scene.hudLabel
-      ? `${this.scene.kind === "coop" ? "Two Hearts" : "Story"} · ${this.scene.hudLabel}`
-      : "One and One Story";
-    this.ui.showPause({
-      label,
-      onResume: () => this.resumeGame(),
-      onRestart: () => this.restartCurrentLevel(),
-      onHelp: () => this.showHelpFromPause(),
-      onMenu: () => this.leaveToMenu(),
-    });
-  }
-
-  resumeGame() {
-    if (this.mode !== "game" || !this.paused || !this.scene) return;
+  resumeFromFocus() {
+    if (!this.focusPaused) return;
+    this.focusPaused = false;
     this.paused = false;
-    this.accumulator = 0;
+    this.audio.setSuspended(false);
+    this.ui.hideFocusPause();
     input.clear();
-    input.setCapturing(true);
-    this.audio.setDucked(false);
-    this.ui.clearScreen();
-    this.ui.showGameHUD(this.hudConfig(this.scene));
+    input.setCapturing(this.mode === "game" && !this.transitioning && !this.ui.screenName);
+    if (this.mode === "game" && this.scene && !this.ui.screenName) {
+      this.ui.showGameHUD(this.hudConfig(this.scene));
+    }
+    this.accumulator = 0;
   }
 
-  showHelpFromPause() {
-    if (!this.scene) return;
-    this.ui.showHelp({
-      coop: this.scene.kind === "coop",
-      onClose: () => this.showPauseOverlay(),
-    });
+  openGuide() {
+    window.open(
+      "http://armorgames.com/guide/one-and-one-story-video-guide",
+      "_blank",
+      "noopener,noreferrer",
+    );
   }
 
   restartCurrentLevel() {
@@ -587,19 +554,6 @@ export class App {
     if (this.mode !== "menu") return;
     this.save.setBonus(true);
     this.audio.playSfx("kiss", { volume: 1 });
-    this.presentMenu({ falling: this.secretFalling });
-    this.ui.menuHint("Two Hearts unlocked.");
-  }
-
-  toggleFullscreen() {
-    const stage = document.getElementById("stage");
-    if (!document.fullscreenElement) {
-      const promise = stage?.requestFullscreen?.();
-      if (promise?.catch) promise.catch(() => {});
-    } else {
-      const promise = document.exitFullscreen?.();
-      if (promise?.catch) promise.catch(() => {});
-    }
   }
 
   async transitionTo(build) {

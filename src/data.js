@@ -41,7 +41,7 @@ export const TITLE_TEXT = {
 };
 
 export const LEVEL_TEXT = {
-  1: "Once again, i remembered\nI must not fall from too high.",
+  1: "     Once again, i remembered   \n    I must not fall from too high.",
 };
 
 export const CHAPTER_FOR_LEVEL = [
@@ -145,16 +145,10 @@ export const MOOD_DEFS = {
     nightAmbience: false,
   },
   noir: {
-    image: "mood-noir", alpha: 0.55, tex: 0.3, grain: 0.5,
+    image: "mood-dawn", alpha: 0.55, tex: 0.3, grain: 0.5,
     windowAlpha: 0.5, lampAlpha: 0.9,
     spriteTint: "#e4768b", leavesTint: "#f7aba2",
     nightAmbience: true,
-  },
-  daylight: {
-    image: "mood-daylight", alpha: 0.55, tex: 0.3, grain: 0.5,
-    windowAlpha: 0.5, lampAlpha: 0.9,
-    spriteTint: "#e4768b", leavesTint: "#f7aba2",
-    nightAmbience: false,
   },
 };
 

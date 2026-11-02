@@ -35,6 +35,7 @@ export class AudioManager {
     this.buffers = new Map();
     this.unlocked = false;
     this.muted = Boolean(muted);
+    this.suspended = false;
     this.desiredMusic = null;
     this.music = new Map();
     this.currentMusic = null;
@@ -46,7 +47,7 @@ export class AudioManager {
     this.ducked = false;
     this.loading = null;
 
-    this.musicLevel = () => (this.muted ? 0 : this.ducked ? 0.24 : 0.68);
+    this.musicLevel = () => (this.muted || this.suspended ? 0 : this.ducked ? 0.24 : 0.68);
   }
 
   ensureContext() {
@@ -223,6 +224,10 @@ export class AudioManager {
     this.ducked = Boolean(ducked);
   }
 
+  setSuspended(suspended) {
+    this.suspended = Boolean(suspended);
+  }
+
   update(dt) {
     const level = this.musicLevel();
     for (const [name, entry] of this.music) {
@@ -254,7 +259,7 @@ export class AudioManager {
       } else if (this.ambience.level > this.ambienceTarget) {
         this.ambience.level = Math.max(this.ambienceTarget, this.ambience.level - speed * dt);
       }
-      this.ambience.audio.volume = this.muted || this.ducked ? 0 : this.ambience.level * 0.38;
+      this.ambience.audio.volume = this.muted || this.ducked || this.suspended ? 0 : this.ambience.level * 0.38;
       if (this.ambienceTarget === 0 && this.ambience.level <= 0.001) {
         this.ambience.audio.pause();
         this.ambience = null;
