@@ -43,14 +43,20 @@ body {
 
 .stage {
   position: relative;
-  width: min(100vw, calc(100dvh * 4 / 3));
-  height: min(100dvh, calc(100vw * 3 / 4));
+  width: min(100vw, calc(100vh * 4 / 3));
+  height: min(100vh, calc(100vw * 3 / 4));
   overflow: hidden;
   background: #000;
   box-shadow: 0 0 80px rgba(0, 0, 0, 0.8);
-  container-type: size;
-  --u: 0.208333cqh;
+  --u: 1px;
   cursor: default;
+}
+
+@supports (height: 100dvh) {
+  .stage {
+    width: min(100vw, calc(100dvh * 4 / 3));
+    height: min(100dvh, calc(100vw * 3 / 4));
+  }
 }
 
 #game {
@@ -300,6 +306,44 @@ body {
   width: calc(var(--u) * 38);
   height: calc(var(--u) * 38);
   font-size: calc(var(--u) * 17);
+}
+
+/* ------------------------------------------------------------------ */
+/* Boot fallback                                                        */
+/* ------------------------------------------------------------------ */
+
+.boot-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: #0d0a08;
+  color: rgba(250, 246, 238, 0.9);
+  font-family: var(--font);
+  text-align: center;
+}
+
+.boot-fallback.is-hidden { display: none; }
+
+.boot-card { width: min(86vw, 620px); }
+
+.boot-title {
+  font-size: clamp(24px, 5vmin, 42px);
+  letter-spacing: 0.03em;
+}
+
+.boot-message {
+  margin-top: 0.9em;
+  font-size: clamp(12px, 2vmin, 16px);
+  color: rgba(242, 232, 213, 0.6);
+}
+
+.boot-hint {
+  margin-top: 2em;
+  font-size: clamp(10px, 1.6vmin, 13px);
+  line-height: 1.6;
+  color: rgba(242, 232, 213, 0.36);
 }
 
 /* ------------------------------------------------------------------ */

@@ -134,6 +134,7 @@ export class UI {
   }
 
   showScreen(name, className, html) {
+    document.getElementById("bootFallback")?.classList.add("is-hidden");
     this.clearScreen();
     this.hideGameLayer();
     const screen = document.createElement("div");

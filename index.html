@@ -44,7 +44,38 @@
       <div id="fade" class="fade"></div>
     </div>
   </div>
+  <div id="bootFallback" class="boot-fallback">
+    <div class="boot-card">
+      <div class="boot-title">One and One Story</div>
+      <div id="bootMessage" class="boot-message">Loading…</div>
+      <div class="boot-hint">
+        If this message stays on screen, open the game in Chrome, Edge, Firefox or Safari
+        with JavaScript enabled — or run <code>npm start</code> from the project folder.
+      </div>
+    </div>
+  </div>
   <noscript>This game needs JavaScript enabled.</noscript>
+  <script>
+    window.addEventListener("error", function (event) {
+      var fallback = document.getElementById("bootFallback");
+      var message = document.getElementById("bootMessage");
+      if (!fallback) return;
+      fallback.classList.remove("is-hidden");
+      if (message) {
+        message.textContent = "The game could not start: " + (event.message || "unknown error");
+      }
+    });
+  </script>
   <script type="module" src="src/main.js"></script>
+  <script>
+    // Opening the source index.html directly from disk cannot load ES modules.
+    // In that case, forward to the self-contained edition next to it.
+    if (location.protocol === "file:" && !window.__ONE_AND_ONE_EMBEDDED__) {
+      var target = new URL("dist/one-and-one-story.html", location.href);
+      var boot = document.getElementById("bootMessage");
+      if (boot) boot.textContent = "Opening the single-file edition…";
+      location.replace(target.href);
+    }
+  </script>
 </body>
 </html>
