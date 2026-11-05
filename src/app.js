@@ -96,13 +96,6 @@ export class App {
         images: this.images,
         onProgress: (progress) => this.ui.updateLoading(progress * 0.7),
       });
-      this.audioReady = this.audio.load((progress) => {
-        this.audioProgress = progress;
-      }).catch((error) => {
-        console.warn("Sound could not be prepared.", error);
-        return null;
-      });
-
       const [levels, , menuImages] = await Promise.all([levelsPromise, fontPromise, menuImagesPromise]);
       this.levels = levels;
       const missingMenu = menuImages.missing.filter((key) => (
@@ -155,6 +148,7 @@ export class App {
         this.presentMenu({ falling: false });
       }
       await this.ui.fadeIn();
+      if (!storyValid && !coopValid) this.prepareAudio();
     } catch (error) {
       console.error(error);
       const hint = window.location.protocol === "file:"
@@ -162,6 +156,18 @@ export class App {
         : "The game could not load. Please reload.";
       this.ui.showError(hint);
     }
+  }
+
+  prepareAudio() {
+    if (!this.audioReady) {
+      this.audioReady = this.audio.load((progress) => {
+        this.audioProgress = progress;
+      }).catch((error) => {
+        console.warn("Sound could not be prepared.", error);
+        return null;
+      });
+    }
+    return this.audioReady;
   }
 
   progressForGameplay() {
@@ -188,16 +194,9 @@ export class App {
   async ensureGameAssets({ showProgress = true, baseline = 0 } = {}) {
     if (this.gameReady) return true;
     this.loadRemainingImages();
-    if (!this.audioReady) {
-      this.audioReady = this.audio.load((progress) => {
-        this.audioProgress = progress;
-      }).catch((error) => {
-        console.warn("Sound could not be prepared.", error);
-        return null;
-      });
-    }
+    const audioReady = this.prepareAudio();
 
-    const ready = Promise.all([this.gameAssetsPromise, this.audioReady]);
+    const ready = Promise.all([this.gameAssetsPromise, audioReady]);
     let waiting = false;
     if (showProgress) {
       let quick = false;

@@ -103,14 +103,27 @@ export const IMAGE_MANIFEST = {
   "coop-controls-josh": "ui/coop-controls-josh.png",
 };
 
-// Everything needed by the title, chapter, credits, pause and intro screens.
-// Background textures and character sheets are deliberately excluded: CSS
-// loads the menu grain/frame by itself and starting a level waits for gameplay.
-export const MENU_IMAGE_KEYS = Object.keys(IMAGE_MANIFEST)
-  .filter((key) => IMAGE_MANIFEST[key].startsWith("ui/"));
+// Only the art that is visible on the title screen (and the first-run tip) is
+// allowed to delay the menu. The remaining interface images are requested by
+// the DOM when a screen opens; the handful used by the canvas game are in the
+// gameplay set below.
+export const MENU_IMAGE_KEYS = [
+  "logo", "logo-blur", "menu-bg",
+  "menu-btn-start", "menu-btn-chapters", "menu-btn-bonus", "menu-btn-credits",
+  "box", "tip", "ag-shield", "ag-text", "like-us",
+  "icon-audio-on", "icon-audio-off",
+];
 
-export const GAMEPLAY_IMAGE_KEYS = Object.keys(IMAGE_MANIFEST)
-  .filter((key) => !MENU_IMAGE_KEYS.includes(key));
+const GAME_UI_KEYS = new Set([
+  "coop-controls-rosie", "coop-controls-josh", "thanks",
+  "end-text-0", "end-text-1", "end-text-2", "end-text-3", "end-text-4",
+]);
+
+export const GAMEPLAY_IMAGE_KEYS = Object.keys(IMAGE_MANIFEST).filter((key) => {
+  if (MENU_IMAGE_KEYS.includes(key)) return false;
+  if (IMAGE_MANIFEST[key].startsWith("ui/")) return GAME_UI_KEYS.has(key);
+  return true;
+});
 
 const CRITICAL_KEYS = new Set([
   "tileset", "josh", "rosie", "crate", "spike", "heart",
