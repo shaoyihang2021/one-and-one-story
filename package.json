@@ -1,13 +1,15 @@
 {
   "name": "one-and-one-story-web",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "A modern HTML5 edition of One and One Story, originally a 2011 Flash game by Mattia Traverso.",
+  "description": "A faithful HTML5 edition of One and One Story, originally a 2011 Flash game by Mattia Traverso.",
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
     "dev": "node server.mjs",
-    "build:single": "node tools/build-standalone.mjs"
+    "build:site": "node tools/build-site.mjs",
+    "build:single": "node tools/build-standalone.mjs",
+    "build": "npm run build:site && npm run build:single"
   },
   "devDependencies": {
     "esbuild": "^0.28.2"

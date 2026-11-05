@@ -4,15 +4,59 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#14100d">
-  <meta name="description" content="One and One Story — a faithful HTML5 edition of the 2011 Flash game by Mattia Traverso.">
-  <title>One and One Story</title>
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="Play One and One Story, a faithful HTML5 edition of the 2011 Flash game by Mattia Traverso. A short puzzle-platformer about two people who need each other.">
+  <meta name="author" content="Mattia Traverso">
+  <meta name="robots" content="index,follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="One and One Story">
+  <meta property="og:title" content="One and One Story — HTML5 Web Edition">
+  <meta property="og:description" content="A faithful HTML5 edition of the 2011 Flash game. Play the story, chapter selection and bonus mode in your browser.">
+  <meta property="og:url" content="https://shaoyihang2021.github.io/one-and-one-story/">
+  <meta property="og:image" content="https://shaoyihang2021.github.io/one-and-one-story/social/og.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="One and One Story title over a warm, softly lit background">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="One and One Story — HTML5 Web Edition">
+  <meta name="twitter:description" content="A faithful HTML5 edition of the 2011 Flash game. Play it in your browser.">
+  <meta name="twitter:image" content="https://shaoyihang2021.github.io/one-and-one-story/social/og.jpg">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="application-name" content="One and One Story">
+  <title>One and One Story — HTML5 Web Edition</title>
+  <link rel="canonical" href="https://shaoyihang2021.github.io/one-and-one-story/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" href="assets/fonts/handfont.woff" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "One and One Story",
+    "url": "https://shaoyihang2021.github.io/one-and-one-story/",
+    "image": "https://shaoyihang2021.github.io/one-and-one-story/social/og.jpg",
+    "description": "A faithful HTML5 edition of the 2011 Flash puzzle-platformer by Mattia Traverso.",
+    "author": { "@type": "Person", "name": "Mattia Traverso" },
+    "genre": "Puzzle-platformer",
+    "gamePlatform": "Web browser",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
 </head>
 <body>
   <div id="app">
     <div id="stage" class="stage">
-      <canvas id="game" width="640" height="480" aria-label="One and One Story"></canvas>
+      <canvas id="game" width="640" height="480" role="application" tabindex="0"
+        aria-label="One and One Story — use arrow keys to move, X or Up to jump, Z or C to switch character."
+        aria-describedby="gameInstructions">One and One Story needs a canvas-capable browser.</canvas>
+      <p id="gameInstructions" class="sr-only">Use the arrow keys to move. Press X or the up arrow to jump. Press Z or C to think of the other character and switch control. Press R to restart a level and M to toggle sound. On touch devices, use the on-screen controls.</p>
 
       <div id="overlay" class="overlay"></div>
 
@@ -44,6 +88,7 @@
       <div id="fade" class="fade"></div>
     </div>
   </div>
+  <div id="rotateHint" class="rotate-hint" aria-hidden="true">Rotate your device for a larger view</div>
   <div id="bootFallback" class="boot-fallback">
     <div class="boot-card">
       <div class="boot-title">One and One Story</div>
@@ -57,6 +102,12 @@
   <noscript>This game needs JavaScript enabled.</noscript>
   <script>
     window.addEventListener("error", function (event) {
+      // Once the app exists it owns its user-facing error screen. Only use the
+      // static fallback when we never got far enough to construct the UI.
+      if (window.__oao && window.__oao.ui) {
+        console.error(event.error || event.message);
+        return;
+      }
       var fallback = document.getElementById("bootFallback");
       var message = document.getElementById("bootMessage");
       if (!fallback) return;

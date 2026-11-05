@@ -94,6 +94,12 @@ async function main() {
 
   let html = await readFile(join(ROOT, "index.html"), "utf8");
 
+  // The local edition does not have a separate manifest, social image or
+  // preload files next to it; remove links that would only 404 when opened.
+  html = html.replace(/\n  <link rel="manifest"[^>]*>/g, "");
+  html = html.replace(/\n  <link rel="apple-touch-icon"[^>]*>/g, "");
+  html = html.replace(/\n  <link rel="preload"[^>]*>/g, "");
+
   html = html.replace(
     '<link rel="icon" href="favicon.svg" type="image/svg+xml">',
     `<link rel="icon" href="${files["favicon.svg"]}" type="image/svg+xml">`,

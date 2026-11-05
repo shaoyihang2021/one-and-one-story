@@ -15,9 +15,9 @@ const LOCKED_BUTTON = { width: 29, height: 19 };
 const SMOKE_SIZES = { 1: [501, 422], 2: [573, 417], 3: [476, 397] };
 
 const SPONSORS = [
-  { cls: "shield", key: "ag-shield", url: "http://www.armorgames.com" },
-  { cls: "ag-text", key: "ag-text", url: "http://www.armorgames.com" },
-  { cls: "like-us", key: "like-us", url: "http://www.facebook.com/ArmorGames" },
+  { cls: "shield", key: "ag-shield", url: "https://www.armorgames.com", label: "Visit Armor Games" },
+  { cls: "ag-text", key: "ag-text", url: "https://www.armorgames.com", label: "Visit Armor Games" },
+  { cls: "like-us", key: "like-us", url: "https://www.facebook.com/ArmorGames", label: "Like Armor Games on Facebook" },
 ];
 
 const SKIP_KEYS = ["Space", "Enter", "NumpadEnter"];
@@ -54,7 +54,6 @@ export class UI {
     this.gameHudVisible = false;
     this.muted = false;
     this.menuBonusUnlocked = false;
-    this.achievementTimers = [];
 
     this.bindHud();
     this.bindTouchActivation();
@@ -127,8 +126,8 @@ export class UI {
   }
 
   sponsorMarkup() {
-    return SPONSORS.map(({ cls, key, url }) => `
-      <button class="menu-sponsor ${cls}" type="button" data-url="${url}" aria-label="Armor Games">
+    return SPONSORS.map(({ cls, key, url, label }) => `
+      <button class="menu-sponsor ${cls}" type="button" data-url="${url}" aria-label="${label}">
         <img src="${assetUrl(`assets/img/ui/${key}.png`)}" alt="">
       </button>`).join("");
   }
@@ -308,6 +307,10 @@ export class UI {
     }
     this.hudAudioIcon.src = assetUrl(`assets/img/ui/${this.muted ? "icon-audio-off" : "icon-audio-on"}.png`);
     this.hudAudio.setAttribute("aria-label", this.muted ? "Turn sound on" : "Turn sound off");
+    this.hudAudio.setAttribute("aria-pressed", this.muted ? "false" : "true");
+    for (const button of document.querySelectorAll(".js-audio")) {
+      button.setAttribute("aria-pressed", this.muted ? "false" : "true");
+    }
   }
 
   setMuted(muted) {
@@ -334,12 +337,17 @@ export class UI {
       <div class="loading-inner">
         <div class="loading-logo-wrap">
           <img class="loading-logo-blur" src="${blur}" alt="">
-          <img src="${logo}" alt="One and One Story">
+          <img class="loading-logo" src="${logo}" alt="One and One Story">
+          <div class="loading-title" aria-hidden="true">One and One Story</div>
         </div>
-        <div class="loading-bar"><span></span></div>
-        <div class="loading-label"></div>
+        <div class="loading-bar" role="progressbar" aria-label="Loading assets" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+        <div class="loading-label" role="status" aria-live="polite"></div>
       </div>`);
     screen.classList.add("is-static");
+    const logoImg = screen.querySelector(".loading-logo");
+    const title = screen.querySelector(".loading-title");
+    if (logoImg?.complete && logoImg.naturalWidth) title?.classList.add("is-hidden");
+    else logoImg?.addEventListener("load", () => title?.classList.add("is-hidden"), { once: true });
     this.updateLoading(progress);
   }
 
@@ -347,20 +355,34 @@ export class UI {
     if (!this.screen || this.screenName !== "loading") return;
     const pct = Math.round(Math.max(0, Math.min(1, progress)) * 100);
     const bar = this.screen.querySelector(".loading-bar span");
+    const progressbar = this.screen.querySelector(".loading-bar");
     const label = this.screen.querySelector(".loading-label");
     if (bar) bar.style.width = `${pct}%`;
+    if (progressbar) progressbar.setAttribute("aria-valuenow", String(pct));
     if (label) label.textContent = `${pct < 100 ? "loading" : "ready"} ${pct}%`;
   }
 
   showError(message) {
-    this.showScreen("error", "loading", `
+    const screen = this.showScreen("error", "loading error", `
       <div class="loading-inner">
         <div class="loading-logo-wrap">
           <img class="loading-logo-blur" src="${assetUrl("assets/img/ui/logo-blur.png")}" alt="">
-          <img src="${assetUrl("assets/img/ui/logo.png")}" alt="One and One Story">
+          <img class="loading-logo" src="${assetUrl("assets/img/ui/logo.png")}" alt="One and One Story">
+          <div class="loading-title" aria-hidden="true">One and One Story</div>
         </div>
-        <div class="loading-label">${message}</div>
+        <div class="loading-label"></div>
+        <button class="error-retry" type="button">Retry</button>
       </div>`);
+    screen.setAttribute("role", "alert");
+    const logoImg = screen.querySelector(".loading-logo");
+    const title = screen.querySelector(".loading-title");
+    if (logoImg?.complete && logoImg.naturalWidth) title?.classList.add("is-hidden");
+    else logoImg?.addEventListener("load", () => title?.classList.add("is-hidden"), { once: true });
+    const label = screen.querySelector(".loading-label");
+    if (label) label.textContent = message;
+    const retry = screen.querySelector(".error-retry");
+    retry?.addEventListener("click", () => window.location.reload());
+    retry?.focus({ preventScroll: true });
   }
 
   showMenu({ bonus = false, falling = false, onStart, onChapters, onBonus, onCredits, onSecret }) {
@@ -475,7 +497,7 @@ export class UI {
   showMenuTip({ onDone }) {
     const screen = this.showScreen("disclaimer", "disclaimer", `
       <div class="screen-bg"></div>
-      <div class="menu-tip"><img src="${assetUrl("assets/img/ui/tip.png")}" alt=""></div>
+      <div class="menu-tip"><img src="${assetUrl("assets/img/ui/tip.png")}" alt="As the story proceeds, game mechanics will change according to the narrative."></div>
       ${this.sponsorMarkup()}
       ${this.audioMarkup()}
     `);
@@ -604,13 +626,13 @@ export class UI {
   showCredits({ achievement = false, onBack }) {
     const screen = this.showScreen("credits", "credits", `
       <div class="screen-bg"></div>
-      <button class="credits-hot author" type="button" data-url="http://www.mattiatraverso.com" aria-label="Mattia Traverso">
+      <button class="credits-hot author" type="button" data-url="https://www.mattiatraverso.com" aria-label="Mattia Traverso's website">
         <img src="${assetUrl("assets/img/ui/icon-home.png")}" alt="">
       </button>
-      <button class="credits-hot artist" type="button" data-url="http://www.gabrielebonis.com" aria-label="Gabriele Bonis">
+      <button class="credits-hot artist" type="button" data-url="https://www.gabrielebonis.com" aria-label="Gabriele Bonis' website">
         <img src="${assetUrl("assets/img/ui/icon-home.png")}" alt="">
       </button>
-      <button class="credits-music" type="button" data-url="http://dvgmusic.bandcamp.com/" aria-label="David Carney">
+      <button class="credits-music" type="button" data-url="https://dvgmusic.bandcamp.com/" aria-label="David Carney's soundtrack on Bandcamp">
         <img class="idle-icon" src="${assetUrl("assets/img/ui/btn-snd-idl.png")}" alt="">
         <img class="hover-icon" src="${assetUrl("assets/img/ui/btn-snd.png")}" alt="">
       </button>
@@ -749,7 +771,34 @@ export class UI {
     this.addTimer(finish, 40 + 2000 + 1667 + 2000);
   }
 
-  async fadeOut() { this.fadeEl.style.opacity = "0"; }
-  async fadeIn() { this.fadeEl.style.opacity = "0"; }
-  setFade() {}
+  fadeTo(opacity) {
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const duration = reduce ? 0 : 180;
+    this.fadeEl.style.transitionDuration = `${duration}ms`;
+    if (duration === 0) {
+      this.fadeEl.style.opacity = String(opacity);
+      return Promise.resolve();
+    }
+    const current = Number.parseFloat(getComputedStyle(this.fadeEl).opacity || "0");
+    if (Math.abs(current - opacity) < 0.01) {
+      this.fadeEl.style.opacity = String(opacity);
+      return Promise.resolve();
+    }
+    this.fadeEl.style.opacity = String(opacity);
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        this.fadeEl.removeEventListener("transitionend", finish);
+        clearTimeout(timer);
+        resolve();
+      };
+      const timer = setTimeout(finish, duration + 90);
+      this.fadeEl.addEventListener("transitionend", finish, { once: true });
+    });
+  }
+
+  async fadeOut() { return this.fadeTo(1); }
+  async fadeIn() { return this.fadeTo(0); }
 }

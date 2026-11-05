@@ -4,7 +4,10 @@ import {
 } from "./data.js";
 import { SaveData } from "./save.js";
 import { AudioManager } from "./audio.js";
-import { loadImages, loadLevels, loadFont } from "./assets.js";
+import {
+  GAMEPLAY_IMAGE_KEYS, MENU_IMAGE_KEYS, loadImageSet, loadLevels, loadFont,
+  missingCriticalKeys,
+} from "./assets.js";
 import { UI } from "./ui.js";
 import { LevelScene } from "./level.js";
 import { input } from "./input.js";
@@ -20,8 +23,16 @@ export class App {
     this.ctx = this.canvas.getContext("2d");
     this.ctx.imageSmoothingEnabled = true;
 
-    this.images = null;
+    this.images = {};
     this.levels = null;
+    this.gameAssetsPromise = null;
+    this.gameAssetsMissing = [];
+    this.gameAssetsProgress = 0;
+    this.audioReady = null;
+    this.audioProgress = 0;
+    this.gameReady = false;
+    this.starting = false;
+    this.busyTimer = null;
     this.scene = null;
     this.mode = "boot";
     this.paused = false;
@@ -81,36 +92,64 @@ export class App {
     try {
       const levelsPromise = loadLevels();
       const fontPromise = loadFont();
-      const audioPromise = this.audio.load();
-
-      this.images = await loadImages((progress) => {
-        this.ui.updateLoading(progress * 0.7);
+      const menuImagesPromise = loadImageSet(MENU_IMAGE_KEYS, {
+        images: this.images,
+        onProgress: (progress) => this.ui.updateLoading(progress * 0.7),
       });
-      this.levels = await levelsPromise;
-      await fontPromise;
-      this.ui.updateLoading(0.82);
-      await audioPromise;
-      this.ui.updateLoading(0.98);
+      this.audioReady = this.audio.load((progress) => {
+        this.audioProgress = progress;
+      }).catch((error) => {
+        console.warn("Sound could not be prepared.", error);
+        return null;
+      });
+
+      const [levels, , menuImages] = await Promise.all([levelsPromise, fontPromise, menuImagesPromise]);
+      this.levels = levels;
+      const missingMenu = menuImages.missing.filter((key) => (
+        ["logo", "logo-blur", "menu-bg", "menu-btn-start"].includes(key)
+      ));
+      if (missingMenu.length) throw new Error(`Could not load the interface (${missingMenu.join(", ")})`);
+
+      // The menu only needs UI art. Backgrounds load while the player is
+      // reading the title; starting a level waits for the remainder.
+      this.gameAssetsPromise = loadImageSet(GAMEPLAY_IMAGE_KEYS, {
+        images: this.images,
+        onProgress: (progress) => {
+          this.gameAssetsProgress = progress;
+        },
+      }).then((result) => {
+        this.gameAssetsMissing = result.missing;
+        return result;
+      });
 
       this.audio.setMuted(this.save.muted);
       this.ui.setMuted(this.save.muted);
       this.audio.playMusic("menu");
-
       this.startLoop();
-      this.ui.updateLoading(1);
-      await wait(500);
+
+      this.ui.updateLoading(0.86);
+      await wait(220);
 
       const params = new URLSearchParams(window.location.search);
-      if (params.get("touch") === "1") this.ui.setTouchEnabled(true);
-      const touchParam = params.get("touch");
-      if (touchParam === "0") this.ui.setTouchEnabled(false);
-
-      await this.ui.fadeOut();
       const storyJump = params.get("level");
       const coopJump = params.get("coop");
-      if (storyJump !== null && /^\d+$/.test(storyJump)) {
+      const storyValid = storyJump !== null && /^\d+$/.test(storyJump);
+      const coopValid = coopJump !== null && /^\d+$/.test(coopJump);
+      if (storyValid || coopValid) {
+        const ready = await this.ensureGameAssets({ baseline: 0.86 });
+        if (!ready) return;
+      }
+
+      this.ui.updateLoading(1);
+      await wait(320);
+
+      if (params.get("touch") === "1") this.ui.setTouchEnabled(true);
+      if (params.get("touch") === "0") this.ui.setTouchEnabled(false);
+
+      await this.ui.fadeOut();
+      if (storyValid) {
         this.presentStoryEntry(Math.max(0, Math.min(19, Number(storyJump))), { showTitle: false });
-      } else if (coopJump !== null && /^\d+$/.test(coopJump)) {
+      } else if (coopValid) {
         this.presentCoopEntry(Math.max(0, Math.min(10, Number(coopJump))));
       } else {
         this.presentMenu({ falling: false });
@@ -122,6 +161,88 @@ export class App {
         ? "Serve this folder over HTTP (npm start) and reload."
         : "The game could not load. Please reload.";
       this.ui.showError(hint);
+    }
+  }
+
+  progressForGameplay() {
+    return Math.min(1, 0.05
+      + this.gameAssetsProgress * 0.75
+      + this.audioProgress * 0.2);
+  }
+
+  loadRemainingImages() {
+    if (!this.gameAssetsPromise) {
+      this.gameAssetsPromise = loadImageSet(GAMEPLAY_IMAGE_KEYS, {
+        images: this.images,
+        onProgress: (progress) => {
+          this.gameAssetsProgress = progress;
+        },
+      }).then((result) => {
+        this.gameAssetsMissing = result.missing;
+        return result;
+      });
+    }
+    return this.gameAssetsPromise;
+  }
+
+  async ensureGameAssets({ showProgress = true, baseline = 0 } = {}) {
+    if (this.gameReady) return true;
+    this.loadRemainingImages();
+    if (!this.audioReady) {
+      this.audioReady = this.audio.load((progress) => {
+        this.audioProgress = progress;
+      }).catch((error) => {
+        console.warn("Sound could not be prepared.", error);
+        return null;
+      });
+    }
+
+    const ready = Promise.all([this.gameAssetsPromise, this.audioReady]);
+    let waiting = false;
+    if (showProgress) {
+      let quick = false;
+      try {
+        quick = await Promise.race([
+          ready.then(() => true),
+          wait(180).then(() => false),
+        ]);
+      } catch (error) {
+        console.error(error);
+        this.ui.showError("Some game files could not be loaded. Check your connection and retry.");
+        return false;
+      }
+      if (!quick) {
+        const alreadyLoading = this.ui.screenName === "loading";
+        if (!alreadyLoading) this.ui.showLoading(this.progressForGameplay());
+        waiting = true;
+      }
+    }
+
+    if (waiting) {
+      this.busyTimer = setInterval(() => {
+        this.ui.updateLoading(Math.max(baseline, this.progressForGameplay() * 0.96));
+      }, 150);
+    }
+
+    try {
+      const [imageResult] = await ready;
+      const critical = missingCriticalKeys(imageResult.missing);
+      if (critical.length) throw new Error(`Missing game assets (${critical.join(", ")})`);
+      this.gameReady = true;
+      if (this.ui.screenName === "loading") {
+        this.ui.updateLoading(1);
+        await wait(160);
+      }
+      return true;
+    } catch (error) {
+      console.error(error);
+      this.ui.showError("Some game files could not be loaded. Check your connection and retry.");
+      return false;
+    } finally {
+      if (this.busyTimer) {
+        clearInterval(this.busyTimer);
+        this.busyTimer = null;
+      }
     }
   }
 
@@ -155,7 +276,7 @@ export class App {
 
     this.audio.update(dt);
 
-    if (this.mode === "game" && this.scene) {
+    if (this.mode === "game" && this.scene && !document.hidden) {
       this.scene.render(this.ctx);
     }
 
@@ -205,13 +326,20 @@ export class App {
     });
   }
 
-  startFromMenu() {
-    if (this.save.chapter === 0) {
-      this.mode = "menu";
-      this.audio.playMusic("menu");
-      this.ui.showMenuTip({ onDone: () => this.startStoryIntro() });
-    } else {
-      this.startStoryIntro();
+  async startFromMenu() {
+    if (this.starting) return;
+    this.starting = true;
+    try {
+      if (!await this.ensureGameAssets()) return;
+      if (this.save.chapter === 0) {
+        this.mode = "menu";
+        this.audio.playMusic("menu");
+        this.ui.showMenuTip({ onDone: () => this.startStoryIntro() });
+      } else {
+        this.startStoryIntro();
+      }
+    } finally {
+      this.starting = false;
     }
   }
 
@@ -231,12 +359,19 @@ export class App {
     });
   }
 
-  enterChapter(chapterNumber) {
+  async enterChapter(chapterNumber) {
     const chapter = CHAPTERS.find((entry) => entry.number === chapterNumber);
     if (!chapter || chapter.number > this.save.chapter) return;
-    this.secretFalling = false;
-    this.audio.playMusic("game");
-    this.goToStoryEntry(chapter.start, { showTitle: true });
+    if (this.starting) return;
+    this.starting = true;
+    try {
+      if (!await this.ensureGameAssets()) return;
+      this.secretFalling = false;
+      this.audio.playMusic("game");
+      this.goToStoryEntry(chapter.start, { showTitle: true });
+    } finally {
+      this.starting = false;
+    }
   }
 
   presentCredits({ achievement = false } = {}) {
@@ -366,11 +501,18 @@ export class App {
     this.transitionTo(() => this.presentCoopEntry(index));
   }
 
-  startCoop(index = 0) {
+  async startCoop(index = 0) {
     if (!this.save.bonus) return;
-    this.secretFalling = false;
-    this.audio.playMusic("game");
-    this.goToCoopEntry(index);
+    if (this.starting) return;
+    this.starting = true;
+    try {
+      if (!await this.ensureGameAssets()) return;
+      this.secretFalling = false;
+      this.audio.playMusic("game");
+      this.goToCoopEntry(index);
+    } finally {
+      this.starting = false;
+    }
   }
 
   advanceCoop(index) {
@@ -490,7 +632,7 @@ export class App {
 
   openGuide() {
     window.open(
-      "http://armorgames.com/guide/one-and-one-story-video-guide",
+      "https://armorgames.com/guide/one-and-one-story-video-guide",
       "_blank",
       "noopener,noreferrer",
     );

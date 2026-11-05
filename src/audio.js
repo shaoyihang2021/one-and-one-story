@@ -54,11 +54,18 @@ export class AudioManager {
     if (this.context) return this.context;
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return null;
-    this.context = new Ctx();
-    this.master = this.context.createGain();
-    this.master.gain.value = 0.72;
-    this.master.connect(this.context.destination);
-    return this.context;
+    try {
+      this.context = new Ctx();
+      this.master = this.context.createGain();
+      this.master.gain.value = 0.72;
+      this.master.connect(this.context.destination);
+      return this.context;
+    } catch (error) {
+      console.warn("Web Audio is unavailable.", error);
+      this.context = null;
+      this.master = null;
+      return null;
+    }
   }
 
   fileUrl(file) {
@@ -96,12 +103,16 @@ export class AudioManager {
     }
   }
 
-  async load() {
+  async load(onProgress) {
     if (this.loading) return this.loading;
     this.loading = (async () => {
       const ctx = this.ensureContext();
-      if (!ctx) return;
+      if (!ctx) {
+        onProgress?.(1);
+        return;
+      }
       const entries = Object.entries(SFX_FILES);
+      let completed = 0;
       await Promise.all(entries.map(async ([name, file]) => {
         try {
           const data = await this.audioBytes(this.fileUrl(file));
@@ -109,6 +120,9 @@ export class AudioManager {
           this.buffers.set(name, buffer);
         } catch (error) {
           console.warn(`Could not load sound ${name}.`, error);
+        } finally {
+          completed += 1;
+          onProgress?.(completed / entries.length);
         }
       }));
     })();
@@ -149,10 +163,9 @@ export class AudioManager {
     return entry;
   }
 
-  playMusic(name, { startImmediately = false } = {}) {
+  playMusic(name) {
     this.desiredMusic = name;
-    if (startImmediately && this.unlocked) this.startMusic(name);
-    else if (this.unlocked) this.startMusic(name);
+    if (this.unlocked) this.startMusic(name);
   }
 
   startMusic(name) {
@@ -164,7 +177,7 @@ export class AudioManager {
     this.currentMusic = entry;
     this.previousMusic = previous;
     entry.target = 1;
-    if (!this.currentMusicStartedPlay(entry)) {
+    if (!this.muted && !this.suspended && !this.currentMusicStartedPlay(entry)) {
       entry.audio.currentTime = 0;
       const promise = entry.audio.play();
       if (promise?.catch) promise.catch(() => {});
@@ -199,8 +212,10 @@ export class AudioManager {
     const audio = new Audio(this.fileUrl(AMBIENCE_FILES[name]));
     audio.loop = true;
     audio.preload = "auto";
-    const promise = audio.play();
-    if (promise?.catch) promise.catch(() => {});
+    if (!this.muted && !this.suspended) {
+      const promise = audio.play();
+      if (promise?.catch) promise.catch(() => {});
+    }
     this.ambience = { audio, level: 0 };
     this.ambienceTarget = 1;
   }
@@ -218,6 +233,9 @@ export class AudioManager {
 
   setMuted(muted) {
     this.muted = Boolean(muted);
+    if (!this.muted) return;
+    for (const entry of this.music.values()) entry.audio.pause();
+    if (this.ambience?.audio) this.ambience.audio.pause();
   }
 
   setDucked(ducked) {
@@ -226,6 +244,11 @@ export class AudioManager {
 
   setSuspended(suspended) {
     this.suspended = Boolean(suspended);
+    if (!this.suspended) return;
+    // Do not keep decoding or outputting audio behind a paused tab. The
+    // update loop restarts the right track when the game resumes.
+    for (const entry of this.music.values()) entry.audio.pause();
+    if (this.ambience?.audio) this.ambience.audio.pause();
   }
 
   update(dt) {
@@ -242,14 +265,16 @@ export class AudioManager {
       if (entry.mix <= 0 && entry !== this.currentMusic) {
         entry.audio.pause();
       }
-      if (this.currentMusic === entry && this.unlocked && entry.audio.paused && entry.target > 0) {
+      if (this.currentMusic === entry && this.unlocked && !this.suspended && !this.muted
+        && entry.audio.paused && entry.target > 0) {
         const promise = entry.audio.play();
         if (promise?.catch) promise.catch(() => {});
       }
     }
 
     if (this.ambience) {
-      if (this.unlocked && this.ambienceTarget > 0 && this.ambience.audio.paused) {
+      if (this.unlocked && !this.suspended && !this.muted && this.ambienceTarget > 0
+        && this.ambience.audio.paused) {
         const promise = this.ambience.audio.play();
         if (promise?.catch) promise.catch(() => {});
       }

@@ -31,6 +31,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  overscroll-behavior: none;
 }
 
 #app {
@@ -50,6 +51,7 @@ body {
   box-shadow: 0 0 80px rgba(0, 0, 0, 0.8);
   --u: 1px;
   cursor: default;
+  touch-action: manipulation;
 }
 
 @supports (height: 100dvh) {
@@ -67,6 +69,23 @@ body {
   display: block;
   image-rendering: auto;
   filter: blur(calc(var(--u) * 0.12));
+}
+
+#game:focus-visible {
+  outline: calc(var(--u) * 1.5) solid rgba(242, 232, 213, 0.45);
+  outline-offset: calc(var(--u) * -2);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .overlay {
@@ -154,40 +173,40 @@ body {
 }
 
 .hud-quit {
-  left: calc(var(--u) * 10);
-  bottom: calc(var(--u) * 10);
+  left: calc(var(--u) * 10 + env(safe-area-inset-left));
+  bottom: calc(var(--u) * 10 + env(safe-area-inset-bottom));
   width: calc(var(--u) * 28);
 }
 
 .hud-audio {
-  left: calc(var(--u) * 59);
-  bottom: calc(var(--u) * 10);
+  left: calc(var(--u) * 59 + env(safe-area-inset-left));
+  bottom: calc(var(--u) * 10 + env(safe-area-inset-bottom));
   width: calc(var(--u) * 31);
 }
 
 .hud-restart {
-  left: calc(var(--u) * 110);
-  bottom: calc(var(--u) * 10);
+  left: calc(var(--u) * 110 + env(safe-area-inset-left));
+  bottom: calc(var(--u) * 10 + env(safe-area-inset-bottom));
   width: calc(var(--u) * 27);
 }
 
 .hud-switch {
-  left: calc(var(--u) * 4);
-  top: calc(var(--u) * 6);
+  left: calc(var(--u) * 4 + env(safe-area-inset-left));
+  top: calc(var(--u) * 6 + env(safe-area-inset-top));
   width: calc(var(--u) * 29);
   opacity: 1;
 }
 
 .hud-help {
   left: calc(var(--u) * 532);
-  bottom: calc(var(--u) * 10);
+  bottom: calc(var(--u) * 10 + env(safe-area-inset-bottom));
   width: calc(var(--u) * 52);
   opacity: 0.5;
 }
 
 .hud-level {
   position: absolute;
-  right: calc(var(--u) * 10);
+  right: calc(var(--u) * 10 + env(safe-area-inset-right));
   top: calc(var(--u) * 445);
   font-size: calc(var(--u) * 18);
   line-height: 1;
@@ -242,9 +261,9 @@ body {
 
 .touch-single {
   position: absolute;
-  right: calc(var(--u) * 12);
-  bottom: calc(var(--u) * 12);
-  left: calc(var(--u) * 12);
+  right: calc(var(--u) * 12 + env(safe-area-inset-right));
+  bottom: calc(var(--u) * 12 + env(safe-area-inset-bottom));
+  left: calc(var(--u) * 12 + env(safe-area-inset-left));
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -277,7 +296,7 @@ body {
 
 .coop-side {
   position: absolute;
-  bottom: calc(var(--u) * 10);
+  bottom: calc(var(--u) * 10 + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -285,8 +304,8 @@ body {
   pointer-events: none;
 }
 
-.coop-side.rosie { left: calc(var(--u) * 10); }
-.coop-side.josh { right: calc(var(--u) * 10); }
+.coop-side.rosie { left: calc(var(--u) * 10 + env(safe-area-inset-left)); }
+.coop-side.josh { right: calc(var(--u) * 10 + env(safe-area-inset-right)); }
 
 .coop-name {
   font-size: calc(var(--u) * 9);
@@ -418,8 +437,8 @@ body {
 
 .screen-hud {
   position: absolute;
-  left: calc(var(--u) * 10);
-  bottom: calc(var(--u) * 10);
+  left: calc(var(--u) * 10 + env(safe-area-inset-left));
+  bottom: calc(var(--u) * 10 + env(safe-area-inset-bottom));
   z-index: 3;
   display: flex;
   gap: calc(var(--u) * 21);
@@ -533,8 +552,8 @@ body {
 
 .menu-audio {
   position: absolute;
-  left: calc(var(--u) * 9);
-  bottom: calc(var(--u) * 10);
+  left: calc(var(--u) * 9 + env(safe-area-inset-left));
+  bottom: calc(var(--u) * 10 + env(safe-area-inset-bottom));
   z-index: 3;
   width: calc(var(--u) * 31);
   padding: 0;
@@ -834,7 +853,7 @@ body {
   position: absolute;
   z-index: 3;
   left: calc(var(--u) * 550);
-  bottom: calc(var(--u) * 10);
+  bottom: calc(var(--u) * 10 + env(safe-area-inset-bottom));
   width: calc(var(--u) * 28);
   padding: 0;
   border: 0;
@@ -862,6 +881,14 @@ body {
   background: #111;
 }
 
+.screen.error {
+  background: #17110d;
+}
+
+.screen.error .loading-label {
+  color: rgba(250, 242, 226, 0.72);
+}
+
 .screen.loading::before,
 .screen.loading::after {
   display: none;
@@ -882,7 +909,7 @@ body {
 .loading-logo-wrap {
   position: relative;
   width: calc(var(--u) * 250);
-  height: auto;
+  height: calc(var(--u) * 48.4);
 }
 
 .loading-logo-wrap img {
@@ -895,6 +922,36 @@ body {
   position: absolute;
   inset: 0;
   opacity: 0.8;
+}
+
+.loading-title {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(242, 232, 213, 0.86);
+  font-family: var(--font);
+  font-size: calc(var(--u) * 22);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  filter: blur(calc(var(--u) * 0.12));
+  pointer-events: none;
+}
+
+.loading-title.is-hidden { display: none; }
+
+/* The menu logo is black ink on warm paper. On the dark loading screen use a
+   cream version so the title stays legible while keeping the same lettering. */
+.screen.loading .loading-logo-wrap img:not(.loading-logo-blur) {
+  filter: invert(1) sepia(0.28) saturate(0.55) brightness(1.05);
+  opacity: 0.92;
+}
+
+.screen.loading .loading-logo-blur {
+  filter: invert(1) sepia(0.28) saturate(0.55) brightness(1.05);
+  opacity: 0.25;
 }
 
 .loading-bar {
@@ -913,10 +970,31 @@ body {
 }
 
 .loading-label {
+  max-width: calc(var(--u) * 300);
   font-size: calc(var(--u) * 10);
+  line-height: 1.5;
   letter-spacing: 0.12em;
   color: rgba(255, 255, 255, 0.4);
   text-align: center;
+}
+
+.error-retry {
+  margin-top: calc(var(--u) * 4);
+  padding: calc(var(--u) * 5) calc(var(--u) * 16);
+  border: calc(var(--u) * 1) solid rgba(242, 232, 213, 0.35);
+  background: transparent;
+  color: rgba(242, 232, 213, 0.8);
+  font-family: var(--font);
+  font-size: calc(var(--u) * 12);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.error-retry:hover,
+.error-retry:focus-visible {
+  border-color: rgba(242, 232, 213, 0.8);
+  color: #fff;
+  outline: none;
 }
 
 /* ------------------------------------------------------------------ */
@@ -955,13 +1033,42 @@ body {
   background: #000;
   opacity: 0;
   pointer-events: none;
+  transition: opacity 180ms linear;
+  will-change: opacity;
 }
 
 /* ------------------------------------------------------------------ */
 /* Small screens                                                        */
 /* ------------------------------------------------------------------ */
 
+.low-power #game {
+  filter: blur(calc(var(--u) * 0.06));
+}
+
 @media (pointer: coarse) {
+  /* The soft upscale is deliberate, but a lighter blur keeps it cheap on
+     phones and other devices without a discrete GPU. */
+  #game { filter: blur(calc(var(--u) * 0.06)); }
+
+  /* Keep the original corner HUD readable underneath the thumbs. */
+  .touch-single { bottom: calc(var(--u) * 56 + env(safe-area-inset-bottom)); }
+  .coop-side { bottom: calc(var(--u) * 54 + env(safe-area-inset-bottom)); }
+
+  /* Enlarge small original buttons without moving their art. This keeps
+     tap targets comfortable on phones while preserving the layout. */
+  .menu-option::after,
+  .chapter-option::after,
+  .hud-icon::after,
+  .screen-hud button::after,
+  .credits-hot::after,
+  .credits-music::after,
+  .menu-audio::after,
+  .skip-hud::after {
+    content: "";
+    position: absolute;
+    inset: calc(var(--u) * -4) calc(var(--u) * -8);
+  }
+
   .touch-btn {
     width: max(44px, calc(var(--u) * 45));
     height: max(44px, calc(var(--u) * 45));
@@ -981,4 +1088,24 @@ body {
   .menu-logo-blur,
   .menu-logo { animation-duration: 0.2s; }
   .falling-character { animation-duration: 0.2s; }
+  .fade { transition: none; }
+}
+
+/* Portrait phones have a lot of unused space outside the 4:3 stage. */
+.rotate-hint {
+  position: fixed;
+  left: 50%;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 8;
+  display: none;
+  color: rgba(242, 232, 213, 0.4);
+  font-family: var(--font);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+@media (orientation: portrait) and (pointer: coarse) {
+  .rotate-hint { display: block; }
 }

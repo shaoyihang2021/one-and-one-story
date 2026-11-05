@@ -19,19 +19,20 @@ export const IMAGE_MANIFEST = {
   "mood-sunset": "bg/mood-sunset.png",
   "mood-night": "bg/mood-night.jpg",
   "mood-dawn": "bg/mood-dawn.jpg",
-  "houses0": "bg/houses0.png",
-  "houses1": "bg/houses1.png",
-  "houses2": "bg/houses2.png",
+  "mood-noir": "bg/mood-noir.png",
+  houses0: "bg/houses0.png",
+  houses1: "bg/houses1.png",
+  houses2: "bg/houses2.png",
   "houses0-light": "bg/houses0-light.png",
   "houses1-light": "bg/houses1-light.png",
   "houses2-light": "bg/houses2-light.png",
-  "hill0": "bg/hill0.png",
-  "hill1": "bg/hill1.png",
+  hill0: "bg/hill0.png",
+  hill1: "bg/hill1.png",
   "hill0-snow": "bg/hill0-snow.png",
   "hill1-snow": "bg/hill1-snow.png",
-  "tree0": "bg/tree0.png",
-  "tree1": "bg/tree1.png",
-  "tree2": "bg/tree2.png",
+  tree0: "bg/tree0.png",
+  tree1: "bg/tree1.png",
+  tree2: "bg/tree2.png",
   "tree0-snow": "bg/tree0-snow.png",
   "tree1-snow": "bg/tree1-snow.png",
   "tree2-snow": "bg/tree2-snow.png",
@@ -41,15 +42,15 @@ export const IMAGE_MANIFEST = {
   "tree0-leaves-color": "bg/tree0-leaves-color.png",
   "tree1-leaves-color": "bg/tree1-leaves-color.png",
   "tree2-leaves-color": "bg/tree2-leaves-color.png",
-  "lamp": "bg/lamp.png",
+  lamp: "bg/lamp.png",
   "lamp-snow": "bg/lamp-snow.png",
   "lamp-light": "bg/lamp-light.png",
   "lamp-light-white": "bg/lamp-light-white.png",
-  "can": "bg/can.png",
+  can: "bg/can.png",
   "can-snow": "bg/can-snow.png",
-  "window0": "bg/window0.png",
-  "window1": "bg/window1.png",
-  "window2": "bg/window2.png",
+  window0: "bg/window0.png",
+  window1: "bg/window1.png",
+  window2: "bg/window2.png",
 
   logo: "ui/logo.png",
   "logo-blur": "ui/logo-blur.png",
@@ -61,14 +62,14 @@ export const IMAGE_MANIFEST = {
   "menu-select": "ui/menu-select.png",
   "menu-credits": "ui/menu-credits.png",
   "pause-screen": "ui/pause-screen.png",
-  "box": "ui/box.png",
-  "tip": "ui/tip.png",
+  box: "ui/box.png",
+  tip: "ui/tip.png",
   "ag-shield": "ui/ag-shield.png",
   "ag-text": "ui/ag-text.png",
   "like-us": "ui/like-us.png",
-  "smoke1": "ui/smoke1.png",
-  "smoke2": "ui/smoke2.png",
-  "smoke3": "ui/smoke3.png",
+  smoke1: "ui/smoke1.png",
+  smoke2: "ui/smoke2.png",
+  smoke3: "ui/smoke3.png",
   aristotle: "ui/aristotle.png",
   "end-title": "ui/end-title.png",
   thanks: "ui/thanks.png",
@@ -102,31 +103,78 @@ export const IMAGE_MANIFEST = {
   "coop-controls-josh": "ui/coop-controls-josh.png",
 };
 
-export async function loadImages(onProgress) {
-  const entries = Object.entries(IMAGE_MANIFEST);
-  const images = {};
-  let done = 0;
+// Everything needed by the title, chapter, credits, pause and intro screens.
+// Background textures and character sheets are deliberately excluded: CSS
+// loads the menu grain/frame by itself and starting a level waits for gameplay.
+export const MENU_IMAGE_KEYS = Object.keys(IMAGE_MANIFEST)
+  .filter((key) => IMAGE_MANIFEST[key].startsWith("ui/"));
 
-  await Promise.all(entries.map(([key, path]) => new Promise((resolve) => {
-    const img = new Image();
-    img.decoding = "async";
-    img.onload = () => {
-      images[key] = img;
-      done += 1;
-      onProgress?.(done / entries.length);
-      resolve();
-    };
-    img.onerror = () => {
-      // Keep the game launchable even if an optional flourish is missing.
-      console.warn(`Could not load image: ${path}`);
-      done += 1;
-      onProgress?.(done / entries.length);
-      resolve();
-    };
-    img.src = EMBEDDED?.files?.[`assets/img/${path}`] || new URL(path, IMAGE_ROOT).href;
-  })));
+export const GAMEPLAY_IMAGE_KEYS = Object.keys(IMAGE_MANIFEST)
+  .filter((key) => !MENU_IMAGE_KEYS.includes(key));
 
-  return images;
+const CRITICAL_KEYS = new Set([
+  "tileset", "josh", "rosie", "crate", "spike", "heart",
+]);
+
+function imageUrl(path) {
+  return EMBEDDED?.files?.[`assets/img/${path}`] || new URL(path, IMAGE_ROOT).href;
+}
+
+function loadImage(path, retries = 1) {
+  return new Promise((resolve) => {
+    let attempt = 0;
+    const start = () => {
+      const img = new Image();
+      img.decoding = "async";
+      img.onload = async () => {
+        // Decode before declaring the asset ready so the first level does not
+        // stutter while the browser catches up on dozens of images at once.
+        try { await img.decode?.(); } catch { /* decode is an optimization */ }
+        resolve(img);
+      };
+      img.onerror = () => {
+        attempt += 1;
+        if (attempt <= retries) {
+          setTimeout(start, 180);
+          return;
+        }
+        console.warn(`Could not load image: ${path}`);
+        resolve(null);
+      };
+      const base = imageUrl(path);
+      const url = attempt === 0 || base.startsWith("data:")
+        ? base
+        : `${base}${base.includes("?") ? "&" : "?"}retry=${attempt}`;
+      img.src = url;
+    };
+    start();
+  });
+}
+
+/**
+ * Load a set of images into a shared image map.
+ * Failures are isolated so one optional flourish cannot block the game.
+ */
+export async function loadImageSet(keys, { images = {}, onProgress, retries = 1 } = {}) {
+  if (!keys.length) {
+    onProgress?.(1, 0, 0);
+    return { images, missing: [] };
+  }
+  let completed = 0;
+  const missing = [];
+  await Promise.all(keys.map(async (key) => {
+    const image = await loadImage(IMAGE_MANIFEST[key], retries);
+    if (image) images[key] = image;
+    else missing.push(key);
+    completed += 1;
+    onProgress?.(completed / keys.length, completed, keys.length);
+  }));
+  if (missing.length) console.warn(`Images unavailable: ${missing.join(", ")}`);
+  return { images, missing };
+}
+
+export function missingCriticalKeys(missing = []) {
+  return missing.filter((key) => CRITICAL_KEYS.has(key));
 }
 
 export async function loadLevels() {

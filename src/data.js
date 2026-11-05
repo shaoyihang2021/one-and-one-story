@@ -75,8 +75,8 @@ export const BACKGROUND_BY_LEVEL = {
   19: { mood: "dawn", season: "autumn", lights: true },
 };
 
-// The original picks a random backdrop for bonus stages. The web edition keeps
-// that spirit but chooses a fixed mood per stage, so a stage always feels the same.
+// The original picks a random backdrop for most bonus stages. The final stage
+// has a fixed dawn palette so its ending reads consistently.
 export const BACKGROUND_BY_COOP = {
   0: { mood: "foggy", season: "winter", lights: false },
   1: { mood: "twilight", season: "winter", lights: true },
@@ -145,7 +145,7 @@ export const MOOD_DEFS = {
     nightAmbience: false,
   },
   noir: {
-    image: "mood-dawn", alpha: 0.55, tex: 0.3, grain: 0.5,
+    image: "mood-noir", alpha: 0.55, tex: 0.3, grain: 0.5,
     windowAlpha: 0.5, lampAlpha: 0.9,
     spriteTint: "#e4768b", leavesTint: "#f7aba2",
     nightAmbience: true,

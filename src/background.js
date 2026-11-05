@@ -1,11 +1,19 @@
 import { VIEW_W, VIEW_H, MOOD_DEFS, WINDOW_OFFSETS } from "./data.js";
 
 const tintCache = new Map();
+const tintIds = new WeakMap();
+let nextTintId = 1;
 
 function tinted(img, color) {
   if (!img) return null;
   if (!color || color === "#ffffff") return img;
-  const key = `${img.src}|${color}`;
+  let id = tintIds.get(img);
+  if (!id) {
+    id = nextTintId;
+    nextTintId += 1;
+    tintIds.set(img, id);
+  }
+  const key = `${id}|${color}`;
   if (tintCache.has(key)) return tintCache.get(key);
   const canvas = document.createElement("canvas");
   canvas.width = img.naturalWidth || img.width;

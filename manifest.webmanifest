@@ -1,0 +1,28 @@
+{
+  "name": "One and One Story",
+  "short_name": "One and One",
+  "description": "A faithful HTML5 edition of the 2011 Flash puzzle-platformer by Mattia Traverso.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#050505",
+  "theme_color": "#14100d",
+  "lang": "en",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
