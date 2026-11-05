@@ -22,13 +22,21 @@ if (window.ResizeObserver && stage) {
   new ResizeObserver(fitStage).observe(stage);
 }
 
-// Keep an offline-capable copy of the site after the first visit. Registration
-// is deliberately delayed so the title screen is never competing with a
-// multi-megabyte background cache fill. The self-contained file has no SW.
+window.addEventListener("unhandledrejection", (event) => {
+  console.error("Unhandled promise rejection:", event.reason);
+});
+
+const app = new App();
+
+// Register the offline cache only after the title (or a direct level) has
+// painted. Precache traffic must never compete with the first screen.
 const devPwa = new URLSearchParams(location.search).get("pwa") === "1";
-if ("serviceWorker" in navigator
+const canCache = "serviceWorker" in navigator
   && (location.protocol === "https:" || devPwa)
-  && !globalThis.__ONE_AND_ONE_EMBEDDED__) {
+  && !globalThis.__ONE_AND_ONE_EMBEDDED__;
+
+function registerOfflineCache() {
+  if (!canCache || app.ui.screenName === "error") return;
   const register = () => {
     navigator.serviceWorker
       .register(new URL("sw.js", location.href))
@@ -41,9 +49,4 @@ if ("serviceWorker" in navigator
   }
 }
 
-window.addEventListener("unhandledrejection", (event) => {
-  console.error("Unhandled promise rejection:", event.reason);
-});
-
-const app = new App();
-app.boot();
+app.boot().then(registerOfflineCache);
