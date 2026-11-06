@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14100d">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="《一与一的故事》是 2011 年 Flash 游戏 One and One Story 的独立简体中文版。一个关于两个人彼此需要、彼此靠近的短篇解谜平台游戏。">
+  <meta name="author" content="Mattia Traverso">
+  <meta name="robots" content="index,follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="一与一的故事">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="一与一的故事 — 汉化版">
+  <meta property="og:description" content="One and One Story 的独立简体中文版。在线游玩故事模式、章节选择与奖励模式。">
+  <meta property="og:url" content="https://shaoyihang2021.github.io/one-and-one-story/zh.html">
+  <meta property="og:image" content="https://shaoyihang2021.github.io/one-and-one-story/social/og-zh.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="一与一的故事 中文标题">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="一与一的故事 — 汉化版">
+  <meta name="twitter:description" content="One and One Story 的独立简体中文版，可在浏览器中直接游玩。">
+  <meta name="twitter:image" content="https://shaoyihang2021.github.io/one-and-one-story/social/og-zh.jpg">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="application-name" content="一与一的故事">
+  <title>一与一的故事 — 汉化版</title>
+  <link rel="canonical" href="https://shaoyihang2021.github.io/one-and-one-story/zh.html">
+  <link rel="alternate" hreflang="en" href="https://shaoyihang2021.github.io/one-and-one-story/">
+  <link rel="alternate" hreflang="zh-CN" href="https://shaoyihang2021.github.io/one-and-one-story/zh.html">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-zh.png">
+  <link rel="manifest" href="manifest-zh.webmanifest">
+  <link rel="preload" href="assets/fonts/handfont-zh.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-zh.css">
+  <script>window.__ONE_AND_ONE_LOCALE = "zh";</script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "一与一的故事",
+    "alternateName": "One and One Story",
+    "url": "https://shaoyihang2021.github.io/one-and-one-story/zh.html",
+    "image": "https://shaoyihang2021.github.io/one-and-one-story/social/og-zh.jpg",
+    "description": "One and One Story 的独立简体中文版，一款关于两个人彼此需要的短篇解谜平台游戏。",
+    "author": { "@type": "Person", "name": "Mattia Traverso" },
+    "translator": { "@type": "Organization", "name": "One and One Story 汉化版" },
+    "genre": "Puzzle-platformer",
+    "gamePlatform": "Web browser",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "inLanguage": "zh-CN",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <div id="stage" class="stage">
+      <canvas id="game" width="640" height="480" role="application" tabindex="0"
+        aria-label="一与一的故事 — 方向键移动，X 或上方向键跳跃，Z 或 C 切换角色。"
+        aria-describedby="gameInstructions">一与一的故事需要支持 Canvas 的浏览器。</canvas>
+      <p id="gameInstructions" class="sr-only">使用方向键移动。按 X 或上方向键跳跃。按 Z 或 C 想起另一个人并切换控制。按 R 重开本关，按 M 开关声音。触屏设备可使用屏幕上的按钮。</p>
+
+      <div id="overlay" class="overlay"></div>
+
+      <div id="narrative" class="narrative" aria-live="polite"></div>
+
+      <div id="hud" class="hud is-hidden" aria-hidden="true">
+        <button id="hudQuit" class="hud-icon hud-quit" type="button" aria-label="返回主菜单">
+          <img src="assets/img/ui/icon-exit.png" alt="">
+        </button>
+        <button id="hudAudio" class="hud-icon hud-audio" type="button" aria-label="开关声音">
+          <img id="hudAudioIcon" src="assets/img/ui/icon-audio-on.png" alt="">
+        </button>
+        <button id="hudRestart" class="hud-icon hud-restart" type="button" aria-label="重新开始本关">
+          <img src="assets/img/ui/icon-restart.png" alt="">
+        </button>
+        <button id="hudSwitch" class="hud-icon hud-switch is-hidden" type="button" aria-label="切换角色">
+          <img id="hudSwitchIcon" src="assets/img/ui/icon-switch-j2r.png" alt="">
+        </button>
+        <button id="hudHelp" class="hud-icon hud-help" type="button" aria-label="打开游戏指南">
+          <img src="assets/img/zh/icon-help.png" alt="">
+        </button>
+        <div class="hud-level" id="hudLevel"></div>
+      </div>
+
+      <div id="touch" class="touch is-hidden" aria-hidden="true"></div>
+      <div id="focusPause" class="focus-pause is-hidden" aria-hidden="true">
+        <img src="assets/img/zh/pause-screen.png" alt="游戏已暂停。点击任意处继续。">
+      </div>
+      <div id="fade" class="fade"></div>
+    </div>
+  </div>
+  <div id="rotateHint" class="rotate-hint" aria-hidden="true">旋转设备以获得更大视野</div>
+  <div id="bootFallback" class="boot-fallback">
+    <div class="boot-card">
+      <div class="boot-title">一与一的故事</div>
+      <div id="bootMessage" class="boot-message">正在载入…</div>
+      <div class="boot-hint">
+        如果此提示一直停留，请在启用 JavaScript 的 Chrome、Edge、Firefox 或 Safari
+        中打开本页；也可以在项目目录运行 <code>npm start</code>。
+      </div>
+    </div>
+  </div>
+  <noscript>本游戏需要启用 JavaScript。</noscript>
+  <script>
+    window.addEventListener("error", function (event) {
+      // Once the app exists it owns its user-facing error screen. Only use the
+      // static fallback when we never got far enough to construct the UI.
+      if (window.__oao && window.__oao.ui) {
+        console.error(event.error || event.message);
+        return;
+      }
+      var fallback = document.getElementById("bootFallback");
+      var message = document.getElementById("bootMessage");
+      if (!fallback) return;
+      fallback.classList.remove("is-hidden");
+      if (message) {
+        message.textContent = "游戏无法启动：" + (event.message || "未知错误");
+      }
+    });
+  </script>
+  <script type="module" src="src/main.js"></script>
+  <script>
+    // 直接双击源码 zh.html 时无法加载 ES Module，转到中文单文件版。
+    if (location.protocol === "file:" && !window.__ONE_AND_ONE_EMBEDDED__) {
+      var target = new URL("dist/one-and-one-story-zh.html", location.href);
+      var boot = document.getElementById("bootMessage");
+      if (boot) boot.textContent = "正在打开中文单文件版…";
+      location.replace(target.href);
+    }
+  </script>
+</body>
+</html>

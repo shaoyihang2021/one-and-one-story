@@ -41,7 +41,12 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       } catch {
-        return (await caches.match(request)) || (await caches.match(ROOT_URL)) || Response.error();
+        // Preserve the path of deep links when offline: /zh.html and
+        // /zh.html?level=1 must not silently fall back to the English root.
+        const pathKey = new URL(url.pathname, url.origin).href;
+        return (await caches.match(pathKey, { ignoreSearch: true }))
+          || (await caches.match(ROOT_URL))
+          || Response.error();
       }
     })());
     return;

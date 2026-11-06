@@ -12,7 +12,10 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const TEMPLATE = join(ROOT, "tools", "sw-template.js");
 const OUTPUT = join(ROOT, "sw.js");
-const LISTED = ["index.html", "styles.css", "favicon.svg", "manifest.webmanifest"];
+const LISTED = [
+  "index.html", "styles.css", "favicon.svg", "manifest.webmanifest",
+  "zh.html", "styles-zh.css", "manifest-zh.webmanifest",
+];
 
 async function walk(directory) {
   const entries = await readdir(directory, { withFileTypes: true });

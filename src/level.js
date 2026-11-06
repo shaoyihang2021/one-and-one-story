@@ -2,8 +2,8 @@ import {
   VIEW_W, VIEW_H,
   STORY_NUMBERS, COOP_NUMBERS,
   BACKGROUND_BY_LEVEL, BACKGROUND_BY_COOP,
-  LEVEL_TEXT,
 } from "./data.js";
+import { levelText, tutorialText } from "./i18n.js";
 import { Background } from "./background.js";
 import {
   Player, Heart, rectsOverlap, playerBox, spikeHitsPlayer,
@@ -185,9 +185,7 @@ export class LevelScene {
         rosie.following = false;
         this.switchAvailable = false;
         this.narrativeAlign = "left";
-        this.setNarrative(this.tutorialJumped
-          ? "I died when i fell... I don't like dying.\nI tried again, pressing X or UP"
-          : "And there I was, moving thanks to the arrow keys.");
+        this.setNarrative(this.tutorialJumped ? tutorialText.fallen : tutorialText.initial);
         break;
 
       case "follow":
@@ -323,7 +321,8 @@ export class LevelScene {
 
   applyLevelText() {
     if (this.kind !== "story") return;
-    if (LEVEL_TEXT[this.index]) this.setNarrative(LEVEL_TEXT[this.index]);
+    const text = levelText(this.index);
+    if (text) this.setNarrative(text);
   }
 
   setNarrative(text, align = this.narrativeAlign) {
@@ -443,18 +442,16 @@ export class LevelScene {
         this.tutorialRevealed = true;
         rosie.visible = true;
         this.switchAvailable = true;
-        this.setNarrative("There she was.\nI Used Z or C to think of her.");
+        this.setNarrative(tutorialText.reveal);
         this.app.refreshHUD();
         return;
       }
       if (josh.x >= 300 && josh.x < 512 && this.tutorialPut !== 3) {
         this.tutorialPut = 3;
-        this.setNarrative("I Really Loved pushing boxes.");
+        this.setNarrative(tutorialText.box);
       } else if (josh.x >= 0 && josh.x < 60 && this.tutorialPut !== 1) {
         this.tutorialPut = 1;
-        this.setNarrative(this.tutorialJumped
-          ? "I died when i fell... I don't like dying.\nI tried again, pressing X or UP"
-          : "And there I was, moving thanks to the arrow keys.");
+        this.setNarrative(this.tutorialJumped ? tutorialText.fallen : tutorialText.initial);
       }
       return;
     }
@@ -462,11 +459,11 @@ export class LevelScene {
     if (rosie.visible) {
       if (rosie.x >= 100 && rosie.x < 320 && this.tutorialPut !== 5) {
         this.tutorialPut = 5;
-        this.setNarrative("She usually jumped over spikes.");
+        this.setNarrative(tutorialText.spikes);
       }
       if (rosie.x >= 320 && this.tutorialPut !== 6) {
         this.tutorialPut = 6;
-        this.setNarrative("She Loved me,\n            ...and i loved her. We always met there.");
+        this.setNarrative(tutorialText.meet);
       }
     }
   }

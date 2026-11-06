@@ -16,17 +16,29 @@ export const STORY_NUMBERS = [
 export const COOP_NUMBERS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
 
 export const CHAPTERS = [
-  { number: 1, roman: "I", title: "Once we were shadows.", start: 1 },
-  { number: 2, roman: "II", title: "When she saw me, she ran to me.", start: 4 },
-  { number: 3, roman: "III", title: "Then we walked together.", start: 7 },
-  { number: 4, roman: "IV", title: "Sometimes we had different views.", start: 10 },
-  { number: 5, roman: "V", title: "And she was running away.", start: 13 },
-  { number: 6, roman: "VI", title: "Without her, I felt heavy like a rock.", start: 15 },
-  { number: 7, roman: "VII", title: "And I realized..", start: 18 },
-  { number: 8, roman: "VIII", title: "Once we were shadows", start: 19 },
+  { number: 1, roman: "I", title: "Once we were shadows.", start: 1, titleZh: "曾经，我们是影子。" },
+  { number: 2, roman: "II", title: "When she saw me, she ran to me.", start: 4, titleZh: "当她看见我，她奔向我。" },
+  { number: 3, roman: "III", title: "Then we walked together.", start: 7, titleZh: "然后我们并肩而行。" },
+  { number: 4, roman: "IV", title: "Sometimes we had different views.", start: 10, titleZh: "有时，我们意见相左。" },
+  { number: 5, roman: "V", title: "And she was running away.", start: 13, titleZh: "而她正在逃离。" },
+  { number: 6, roman: "VI", title: "Without her, I felt heavy like a rock.", start: 15, titleZh: "没有她，我沉重如石。" },
+  { number: 7, roman: "VII", title: "And I realized..", start: 18, titleZh: "于是我明白……" },
+  { number: 8, roman: "VIII", title: "Once we were shadows", start: 19, titleZh: "……如今，我们是光。" },
 ];
 
 export const TITLE_LEVELS = new Set([1, 4, 7, 10, 13, 15, 18, 19]);
+
+export const TITLE_TEXT_ZH = {
+  1: ["曾经，我们是影子。"],
+  4: ["当她看见我，她奔向我。"],
+  7: ["然后我们并肩而行。"],
+  10: ["有时，我们意见相左。"],
+  13: ["而她正在逃离。"],
+  15: ["没有她，我沉重如石。"],
+  18: ["于是我明白……"],
+  19: ["曾经，我们是影子", "如今，我们是光"],
+  111: ["超脱此界，坠入无尽。"],
+};
 
 export const TITLE_TEXT = {
   1: ["Once we were shadows."],
@@ -42,6 +54,10 @@ export const TITLE_TEXT = {
 
 export const LEVEL_TEXT = {
   1: "     Once again, i remembered   \n    I must not fall from too high.",
+};
+
+export const LEVEL_TEXT_ZH = {
+  1: "    又一次，我想起\n    不能从太高的地方坠落。",
 };
 
 export const CHAPTER_FOR_LEVEL = [

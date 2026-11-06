@@ -1,5 +1,6 @@
 import { input } from "./input.js";
 import { assetUrl } from "./embedded.js";
+import { chapterAlt, isZh, t } from "./i18n.js";
 
 const CHAPTER_BUTTONS = [
   { width: 192, height: 19 },
@@ -15,9 +16,9 @@ const LOCKED_BUTTON = { width: 29, height: 19 };
 const SMOKE_SIZES = { 1: [501, 422], 2: [573, 417], 3: [476, 397] };
 
 const SPONSORS = [
-  { cls: "shield", key: "ag-shield", url: "https://www.armorgames.com", label: "Visit Armor Games" },
-  { cls: "ag-text", key: "ag-text", url: "https://www.armorgames.com", label: "Visit Armor Games" },
-  { cls: "like-us", key: "like-us", url: "https://www.facebook.com/ArmorGames", label: "Like Armor Games on Facebook" },
+  { cls: "shield", key: "ag-shield", url: "https://www.armorgames.com", label: "sponsorArmor" },
+  { cls: "ag-text", key: "ag-text", url: "https://www.armorgames.com", label: "sponsorArmor" },
+  { cls: "like-us", key: "like-us", url: "https://www.facebook.com/ArmorGames", label: "sponsorFacebook" },
 ];
 
 const SKIP_KEYS = ["Space", "Enter", "NumpadEnter"];
@@ -115,19 +116,19 @@ export class UI {
 
   audioMarkup(cls = "menu-audio") {
     const icon = assetUrl(`assets/img/ui/${this.muted ? "icon-audio-off" : "icon-audio-on"}.png`);
-    return `<button class="${cls} js-audio" type="button" aria-label="Toggle sound"><img src="${icon}" alt=""></button>`;
+    return `<button class="${cls} js-audio" type="button" aria-label="${t("toggleSound")}"><img src="${icon}" alt=""></button>`;
   }
 
   screenHudMarkup() {
     return `<div class="screen-hud">
-      <button class="js-quit" type="button" aria-label="Quit to menu"><img src="${assetUrl("assets/img/ui/icon-exit.png")}" alt=""></button>
+      <button class="js-quit" type="button" aria-label="${t("quit")}"><img src="${assetUrl("assets/img/ui/icon-exit.png")}" alt=""></button>
       ${this.audioMarkup("screen-audio")}
     </div>`;
   }
 
   sponsorMarkup() {
     return SPONSORS.map(({ cls, key, url, label }) => `
-      <button class="menu-sponsor ${cls}" type="button" data-url="${url}" aria-label="${label}">
+      <button class="menu-sponsor ${cls}" type="button" data-url="${url}" aria-label="${t(label)}">
         <img src="${assetUrl(`assets/img/ui/${key}.png`)}" alt="">
       </button>`).join("");
   }
@@ -244,19 +245,19 @@ export class UI {
       this.touchEl.innerHTML = `
         <div class="touch-coop">
           <div class="coop-side rosie">
-            <span class="coop-name">Rosie</span>
+            <span class="coop-name">${t("coopRosie")}</span>
             <div class="coop-buttons">
-              <button class="touch-btn" data-code="KeyA" type="button" aria-label="Rosie left">${iconLeft}</button>
-              <button class="touch-btn" data-code="KeyD" type="button" aria-label="Rosie right">${iconRight}</button>
-              <button class="touch-btn" data-code="KeyW" type="button" aria-label="Rosie jump">${iconUp}</button>
+              <button class="touch-btn" data-code="KeyA" type="button" aria-label="${t("rosieLeft")}">${iconLeft}</button>
+              <button class="touch-btn" data-code="KeyD" type="button" aria-label="${t("rosieRight")}">${iconRight}</button>
+              <button class="touch-btn" data-code="KeyW" type="button" aria-label="${t("rosieJump")}">${iconUp}</button>
             </div>
           </div>
           <div class="coop-side josh">
-            <span class="coop-name">Josh</span>
+            <span class="coop-name">${t("coopJosh")}</span>
             <div class="coop-buttons">
-              <button class="touch-btn" data-code="ArrowLeft" type="button" aria-label="Josh left">${iconLeft}</button>
-              <button class="touch-btn" data-code="ArrowRight" type="button" aria-label="Josh right">${iconRight}</button>
-              <button class="touch-btn" data-code="ArrowUp" type="button" aria-label="Josh jump">${iconUp}</button>
+              <button class="touch-btn" data-code="ArrowLeft" type="button" aria-label="${t("joshLeft")}">${iconLeft}</button>
+              <button class="touch-btn" data-code="ArrowRight" type="button" aria-label="${t("joshRight")}">${iconRight}</button>
+              <button class="touch-btn" data-code="ArrowUp" type="button" aria-label="${t("joshJump")}">${iconUp}</button>
             </div>
           </div>
         </div>`;
@@ -264,11 +265,11 @@ export class UI {
       this.touchEl.innerHTML = `
         <div class="touch-single">
           <div class="touch-move">
-            <button class="touch-btn" data-code="ArrowLeft" type="button" aria-label="Move left">${iconLeft}</button>
-            <button class="touch-btn" data-code="ArrowRight" type="button" aria-label="Move right">${iconRight}</button>
+            <button class="touch-btn" data-code="ArrowLeft" type="button" aria-label="${t("touchLeft")}">${iconLeft}</button>
+            <button class="touch-btn" data-code="ArrowRight" type="button" aria-label="${t("touchRight")}">${iconRight}</button>
           </div>
           <div class="touch-actions">
-            <button class="touch-btn jump" data-code="KeyX" type="button" aria-label="Jump">${iconUp}</button>
+            <button class="touch-btn jump" data-code="KeyX" type="button" aria-label="${t("touchJump")}">${iconUp}</button>
           </div>
         </div>`;
     }
@@ -306,9 +307,10 @@ export class UI {
       img.src = assetUrl(`assets/img/ui/${this.muted ? "icon-audio-off" : "icon-audio-on"}.png`);
     }
     this.hudAudioIcon.src = assetUrl(`assets/img/ui/${this.muted ? "icon-audio-off" : "icon-audio-on"}.png`);
-    this.hudAudio.setAttribute("aria-label", this.muted ? "Turn sound on" : "Turn sound off");
+    this.hudAudio.setAttribute("aria-label", this.muted ? t("soundOn") : t("soundOff"));
     this.hudAudio.setAttribute("aria-pressed", this.muted ? "false" : "true");
     for (const button of document.querySelectorAll(".js-audio")) {
+      button.setAttribute("aria-label", t("toggleSound"));
       button.setAttribute("aria-pressed", this.muted ? "false" : "true");
     }
   }
@@ -337,10 +339,10 @@ export class UI {
       <div class="loading-inner">
         <div class="loading-logo-wrap">
           <img class="loading-logo-blur" src="${blur}" alt="">
-          <img class="loading-logo" src="${logo}" alt="One and One Story">
+          <img class="loading-logo" src="${logo}" alt="${t("menuLogo")}">
           <div class="loading-title" aria-hidden="true">One and One Story</div>
         </div>
-        <div class="loading-bar" role="progressbar" aria-label="Loading assets" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+        <div class="loading-bar" role="progressbar" aria-label="${t("loadingAssets")}" aria-valuemin="0" aria-valuemax="100"><span></span></div>
         <div class="loading-label" role="status" aria-live="polite"></div>
       </div>`);
     screen.classList.add("is-static");
@@ -359,7 +361,7 @@ export class UI {
     const label = this.screen.querySelector(".loading-label");
     if (bar) bar.style.width = `${pct}%`;
     if (progressbar) progressbar.setAttribute("aria-valuenow", String(pct));
-    if (label) label.textContent = `${pct < 100 ? "loading" : "ready"} ${pct}%`;
+    if (label) label.textContent = `${t(pct < 100 ? "loading" : "ready")} ${pct}%`;
   }
 
   showError(message) {
@@ -367,11 +369,11 @@ export class UI {
       <div class="loading-inner">
         <div class="loading-logo-wrap">
           <img class="loading-logo-blur" src="${assetUrl("assets/img/ui/logo-blur.png")}" alt="">
-          <img class="loading-logo" src="${assetUrl("assets/img/ui/logo.png")}" alt="One and One Story">
+          <img class="loading-logo" src="${assetUrl("assets/img/ui/logo.png")}" alt="${t("menuLogo")}">
           <div class="loading-title" aria-hidden="true">One and One Story</div>
         </div>
         <div class="loading-label"></div>
-        <button class="error-retry" type="button">Retry</button>
+        <button class="error-retry" type="button">${t("retry")}</button>
       </div>`);
     screen.setAttribute("role", "alert");
     const logoImg = screen.querySelector(".loading-logo");
@@ -390,20 +392,21 @@ export class UI {
     const screen = this.showScreen("menu", "menu", `
       <div class="screen-bg"></div>
       <img class="menu-logo-blur" src="${assetUrl("assets/img/ui/logo-blur.png")}" alt="">
-      <img class="menu-logo" src="${assetUrl("assets/img/ui/logo.png")}" alt="One and One Story">
+      <img class="menu-logo" src="${assetUrl("assets/img/ui/logo.png")}" alt="${t("menuLogo")}">
+      ${isZh ? '<div class="menu-subtitle-zh">一与一的故事</div>' : ""}
       <button class="menu-option start is-selected" type="button" data-action="start">
-        <img src="${assetUrl("assets/img/ui/menu-btn-start.png")}" alt="Start">
+        <img src="${assetUrl("assets/img/ui/menu-btn-start.png")}" alt="${t("menuStart")}">
       </button>
       <button class="menu-option chapters" type="button" data-action="chapters">
-        <img src="${assetUrl("assets/img/ui/menu-btn-chapters.png")}" alt="Chapter Selection">
+        <img src="${assetUrl("assets/img/ui/menu-btn-chapters.png")}" alt="${t("menuChapters")}">
       </button>
       <button class="menu-option bonus" type="button" data-action="bonus">
-        <img src="${assetUrl("assets/img/ui/menu-btn-bonus.png")}" alt="Bonus Mode">
+        <img src="${assetUrl("assets/img/ui/menu-btn-bonus.png")}" alt="${t("menuBonus")}">
       </button>
       <button class="menu-option credits" type="button" data-action="credits">
-        <img src="${assetUrl("assets/img/ui/menu-btn-credits.png")}" alt="Credits">
+        <img src="${assetUrl("assets/img/ui/menu-btn-credits.png")}" alt="${t("menuCredits")}">
       </button>
-      <div class="menu-box"><img src="${assetUrl("assets/img/ui/box.png")}" alt="Finish the game to unlock this game mode."></div>
+      <div class="menu-box"><img src="${assetUrl("assets/img/ui/box.png")}" alt="${t("menuBox")}"></div>
       ${this.sponsorMarkup()}
       ${this.audioMarkup()}
       ${falling ? '<div class="falling-character josh"></div><div class="falling-character rosie"></div>' : ""}
@@ -497,7 +500,7 @@ export class UI {
   showMenuTip({ onDone }) {
     const screen = this.showScreen("disclaimer", "disclaimer", `
       <div class="screen-bg"></div>
-      <div class="menu-tip"><img src="${assetUrl("assets/img/ui/tip.png")}" alt="As the story proceeds, game mechanics will change according to the narrative."></div>
+      <div class="menu-tip"><img src="${assetUrl("assets/img/ui/tip.png")}" alt="${t("menuTip")}"></div>
       ${this.sponsorMarkup()}
       ${this.audioMarkup()}
     `);
@@ -554,7 +557,7 @@ export class UI {
         data-chapter="${item.index + 1}"
         style="top:calc(var(--u) * ${item.top});width:calc(var(--u) * ${item.width})"
         ${item.available ? "" : "disabled"}>
-        <img src="${item.src}" alt="Chapter ${item.index + 1}">
+        <img src="${item.src}" alt="${item.available ? chapterAlt(item.index + 1) : t("lockedChapter")}">
       </button>`).join("");
 
     const screen = this.showScreen("chapters", "chapters", `
@@ -626,19 +629,19 @@ export class UI {
   showCredits({ achievement = false, onBack }) {
     const screen = this.showScreen("credits", "credits", `
       <div class="screen-bg"></div>
-      <button class="credits-hot author" type="button" data-url="https://www.mattiatraverso.com" aria-label="Mattia Traverso's website">
+      <button class="credits-hot author" type="button" data-url="https://www.mattiatraverso.com" aria-label="${t("creditsAuthor")}">
         <img src="${assetUrl("assets/img/ui/icon-home.png")}" alt="">
       </button>
-      <button class="credits-hot artist" type="button" data-url="https://www.gabrielebonis.com" aria-label="Gabriele Bonis' website">
+      <button class="credits-hot artist" type="button" data-url="https://www.gabrielebonis.com" aria-label="${t("creditsArtist")}">
         <img src="${assetUrl("assets/img/ui/icon-home.png")}" alt="">
       </button>
-      <button class="credits-music" type="button" data-url="https://dvgmusic.bandcamp.com/" aria-label="David Carney's soundtrack on Bandcamp">
+      <button class="credits-music" type="button" data-url="https://dvgmusic.bandcamp.com/" aria-label="${t("creditsMusic")}">
         <img class="idle-icon" src="${assetUrl("assets/img/ui/btn-snd-idl.png")}" alt="">
         <img class="hover-icon" src="${assetUrl("assets/img/ui/btn-snd.png")}" alt="">
       </button>
       <div class="credits-version">1.04</div>
       ${this.screenHudMarkup()}
-      ${achievement ? `<div class="achievement-layer"><img src="${assetUrl("assets/img/ui/achievement.png")}" alt="Bonus Mode Unlocked"></div>` : ""}
+      ${achievement ? `<div class="achievement-layer"><img src="${assetUrl("assets/img/ui/achievement.png")}" alt="${t("achievement")}"></div>` : ""}
     `);
     this.bindQuit(screen, onBack);
     for (const button of screen.querySelectorAll("[data-url]")) {
@@ -675,7 +678,7 @@ export class UI {
   }
 
   skipMarkup() {
-    return `<button class="skip-hud" type="button" aria-label="Skip">
+    return `<button class="skip-hud" type="button" aria-label="${t("skip")}">
       <img src="${assetUrl("assets/img/ui/icon-skip.png")}" alt="">
     </button>`;
   }
@@ -729,7 +732,7 @@ export class UI {
 
   showQuote({ onDone }) {
     const screen = this.showScreen("quote", "quote", `
-      <img class="quote-img" src="${assetUrl("assets/img/ui/aristotle.png")}" alt="Love is one soul in two bodies. Aristotle.">
+      <img class="quote-img" src="${assetUrl("assets/img/ui/aristotle.png")}" alt="${t("quote")}">
       ${this.smokeMarkup("quote")}
       ${this.skipMarkup()}
     `);
@@ -758,7 +761,7 @@ export class UI {
 
   showEndTitle({ onDone }) {
     const screen = this.showScreen("endcard", "endcard", `
-      <img class="endcard-img" src="${assetUrl("assets/img/ui/end-title.png")}" alt="The End">
+      <img class="endcard-img" src="${assetUrl("assets/img/ui/end-title.png")}" alt="${t("end")}">
     `);
     const img = screen.querySelector(".endcard-img");
     let finished = false;

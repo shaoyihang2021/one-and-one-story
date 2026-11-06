@@ -1,3 +1,5 @@
+import { isZh } from "./i18n.js";
+
 const EMBEDDED = globalThis.__ONE_AND_ONE_EMBEDDED__;
 const IMAGE_ROOT = new URL("assets/img/", document.baseURI);
 
@@ -129,6 +131,27 @@ const CRITICAL_KEYS = new Set([
   "tileset", "josh", "rosie", "crate", "spike", "heart",
 ]);
 
+const ZH_IMAGE_PATHS = {
+  "menu-btn-start": "zh/menu-btn-start.png",
+  "menu-btn-chapters": "zh/menu-btn-chapters.png",
+  "menu-btn-bonus": "zh/menu-btn-bonus.png",
+  "menu-btn-credits": "zh/menu-btn-credits.png",
+  tip: "zh/tip.png",
+  box: "zh/box.png",
+  "like-us": "zh/like-us.png",
+  thanks: "zh/thanks.png",
+  "end-text-0": "zh/end-text-0.png",
+  "end-text-1": "zh/end-text-1.png",
+  "end-text-2": "zh/end-text-2.png",
+  "end-text-3": "zh/end-text-3.png",
+  "end-text-4": "zh/end-text-4.png",
+};
+
+function imagePath(key) {
+  if (isZh && ZH_IMAGE_PATHS[key]) return ZH_IMAGE_PATHS[key];
+  return IMAGE_MANIFEST[key];
+}
+
 function imageUrl(path) {
   return EMBEDDED?.files?.[`assets/img/${path}`] || new URL(path, IMAGE_ROOT).href;
 }
@@ -176,7 +199,7 @@ export async function loadImageSet(keys, { images = {}, onProgress, retries = 1 
   let completed = 0;
   const missing = [];
   await Promise.all(keys.map(async (key) => {
-    const image = await loadImage(IMAGE_MANIFEST[key], retries);
+    const image = await loadImage(imagePath(key), retries);
     if (image) images[key] = image;
     else missing.push(key);
     completed += 1;

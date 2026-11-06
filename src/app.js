@@ -1,7 +1,8 @@
 import {
-  CHAPTERS, TITLE_LEVELS, TITLE_TEXT, chapterForLevel, modeForStoryLevel,
+  CHAPTERS, TITLE_LEVELS, chapterForLevel, modeForStoryLevel,
   STEP,
 } from "./data.js";
+import { t, titleTexts } from "./i18n.js";
 import { SaveData } from "./save.js";
 import { AudioManager } from "./audio.js";
 import {
@@ -151,9 +152,7 @@ export class App {
       if (!storyValid && !coopValid) this.prepareAudio();
     } catch (error) {
       console.error(error);
-      const hint = window.location.protocol === "file:"
-        ? "Serve this folder over HTTP (npm start) and reload."
-        : "The game could not load. Please reload.";
+      const hint = t(window.location.protocol === "file:" ? "errorFile" : "errorHttp");
       this.ui.showError(hint);
     }
   }
@@ -207,7 +206,7 @@ export class App {
         ]);
       } catch (error) {
         console.error(error);
-        this.ui.showError("Some game files could not be loaded. Check your connection and retry.");
+        this.ui.showError(t("errorAssets"));
         return false;
       }
       if (!quick) {
@@ -235,7 +234,7 @@ export class App {
       return true;
     } catch (error) {
       console.error(error);
-      this.ui.showError("Some game files could not be loaded. Check your connection and retry.");
+      this.ui.showError(t("errorAssets"));
       return false;
     } finally {
       if (this.busyTimer) {
@@ -425,11 +424,12 @@ export class App {
     input.setCapturing(false);
     this.ui.clearScreen();
 
-    if (showTitle && TITLE_TEXT[safeIndex]) {
+    const introTexts = titleTexts(safeIndex);
+    if (showTitle && introTexts) {
       this.mode = "title";
       this.scene = null;
       this.ui.showTitle({
-        texts: TITLE_TEXT[safeIndex],
+        texts: introTexts,
         onDone: () => {
           this.transitionTo(() => this.loadStoryLevelNow(safeIndex));
         },
@@ -594,7 +594,7 @@ export class App {
       this.audio.playMusic("menu");
       input.setCapturing(false);
       this.ui.showTitle({
-        texts: TITLE_TEXT[111],
+        texts: titleTexts(111),
         onDone: () => {
           this.secretFalling = true;
           this.transitionTo(() => this.presentMenu({ falling: true }));
