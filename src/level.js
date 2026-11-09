@@ -910,7 +910,10 @@ export class LevelScene {
   }
 
   crateGrounded(crate) {
-    return this.solidsAt({ x: crate.x, y: crate.y + 1, w: 32, h: 32 }, crate).length > 0;
+    // moveCrateVertical advances in 0.25px steps, so at rest any leftover gap
+    // is smaller than that. Half a pixel of tolerance reliably reports the
+    // crate as grounded, which is what enables pushing again after a fall.
+    return this.solidsAt({ x: crate.x, y: crate.y + 0.5, w: 32, h: 32 }, crate).length > 0;
   }
 
   tryPushCrate(crate, dt) {
@@ -971,7 +974,12 @@ export class LevelScene {
       }
     }
 
-    const target = { x: crate.x + dx, y: crate.y, w: 32, h: 32 };
+    // A crate settles up to a quarter pixel above the floor. When it comes to
+    // rest tucked under a ledge that same fraction overlaps the ledge above,
+    // which would otherwise block every horizontal push. Ignore half a pixel
+    // of ceiling contact while sliding sideways: it is invisible and keeps
+    // crates usable after they drop off a platform.
+    const target = { x: crate.x + dx, y: crate.y + 0.5, w: 32, h: 31.5 };
     const hits = this.solidsAt(target, crate);
     for (const hit of hits) {
       if (hit.kind === "crate") {
@@ -986,10 +994,21 @@ export class LevelScene {
   }
 
   moveCrateVertical(crate, dy) {
-    const target = { x: crate.x, y: crate.y + dy, w: 32, h: 32 };
-    if (this.solidsAt(target, crate).length) return false;
-    crate.y += dy;
-    return true;
+    if (!dy) return false;
+    // Step in quarter pixels so a crate settles flush on the floor. A single
+    // large step would stop up to a full frame of fall distance above it,
+    // leaving the crate hovering and unpushable because crateGrounded() would
+    // never be true.
+    const steps = Math.max(1, Math.ceil(Math.abs(dy) / 0.25));
+    const increment = dy / steps;
+    let moved = false;
+    for (let i = 0; i < steps; i += 1) {
+      const target = { x: crate.x, y: crate.y + increment, w: 32, h: 32 };
+      if (this.solidsAt(target, crate).length) break;
+      crate.y += increment;
+      moved = true;
+    }
+    return moved;
   }
 
   solidsAt(box, exclude = null) {
