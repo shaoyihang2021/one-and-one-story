@@ -68,6 +68,9 @@ export const IMAGE_MANIFEST = {
   tip: "ui/tip.png",
   "ag-shield": "ui/ag-shield.png",
   "ag-text": "ui/ag-text.png",
+  "intro-sword": "ui/intro-sword.png",
+  "intro-armor": "ui/intro-armor.png",
+  "intro-matx": "ui/intro-matx.png",
   "like-us": "ui/like-us.png",
   smoke1: "ui/smoke1.png",
   smoke2: "ui/smoke2.png",
@@ -112,7 +115,7 @@ export const IMAGE_MANIFEST = {
 export const MENU_IMAGE_KEYS = [
   "logo", "logo-blur", "menu-bg",
   "menu-btn-start", "menu-btn-chapters", "menu-btn-bonus", "menu-btn-credits",
-  "box", "tip", "ag-shield", "ag-text", "like-us",
+  "box", "tip", "ag-shield", "ag-text", "intro-sword", "intro-armor", "intro-matx", "like-us",
   "icon-audio-on", "icon-audio-off",
 ];
 

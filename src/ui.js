@@ -387,6 +387,64 @@ export class UI {
     retry?.focus({ preventScroll: true });
   }
 
+  showIntro({ onDone }) {
+    const sword = assetUrl("assets/img/ui/intro-sword.png");
+    const armor = assetUrl("assets/img/ui/intro-armor.png");
+    const matx = assetUrl("assets/img/ui/intro-matx.png");
+    const screen = this.showScreen("intro", "intro", `
+      <div class="intro-scene intro-ag" aria-hidden="true">
+        <div class="intro-swords">
+          <img class="intro-sword intro-sword-left" src="${sword}" alt="">
+          <img class="intro-sword intro-sword-right" src="${sword}" alt="">
+        </div>
+        <img class="intro-armor" src="${armor}" alt="">
+      </div>
+      <div class="intro-scene intro-matx" aria-hidden="true">
+        <div class="intro-sky"></div>
+        <svg class="intro-buildings" viewBox="0 0 640 210" preserveAspectRatio="none">
+          <path fill="#0a0b0c" d="M0 92h30V58h54v34h26V34h62v58h36V70h58v22h44V44h70v48h36V26h64v66h48V62h64v30h48v118H0Z"/>
+          <g fill="rgba(190,200,205,0.10)">
+            <rect x="46" y="66" width="6" height="4"/><rect x="58" y="66" width="6" height="4"/>
+            <rect x="112" y="44" width="6" height="4"/><rect x="126" y="44" width="6" height="4"/>
+            <rect x="158" y="78" width="6" height="4"/><rect x="172" y="78" width="6" height="4"/>
+            <rect x="238" y="52" width="6" height="4"/><rect x="252" y="52" width="6" height="4"/>
+            <rect x="336" y="36" width="6" height="4"/><rect x="350" y="36" width="6" height="4"/>
+            <rect x="456" y="70" width="6" height="4"/><rect x="470" y="70" width="6" height="4"/>
+          </g>
+        </svg>
+        <div class="intro-rain"></div>
+        <svg class="intro-umbrella" viewBox="0 0 220 240" aria-hidden="true">
+          <path d="M12 122C12 56 56 18 110 18s98 38 98 104c-20-12-40-16-60-10-10-13-24-18-38-18s-28 5-38 18c-20-6-40-2-60 10Z" fill="#0d0d0e" stroke="#343638" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M110 122v76c0 20 12 28 26 28 12 0 20-8 20-18" fill="none" stroke="#2c2e30" stroke-width="6" stroke-linecap="round"/>
+          <path d="M12 122c22 12 42 14 62 6M146 118c18 0 34 3 50 8" fill="none" stroke="#1d1f21" stroke-width="2" opacity="0.8"/>
+        </svg>
+        <div class="intro-flash"></div>
+        <img class="intro-matx-logo" src="${matx}" alt="MaTX">
+      </div>
+      <button class="intro-skip" type="button">${t("skip")}</button>`);
+
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      this.clearTimers();
+      screen.classList.add("is-finishing");
+      this.addTimer(onDone, 260);
+    };
+    screen.addEventListener("click", finish);
+    screen.querySelector(".intro-skip")?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      finish();
+    });
+    this.bindKey((event) => {
+      if (event.repeat) return;
+      if (!["Space", "Enter", "NumpadEnter", "Escape"].includes(event.code)) return;
+      event.preventDefault();
+      finish();
+    });
+    this.addTimer(finish, 12000);
+  }
+
   showMenu({ bonus = false, falling = false, onStart, onChapters, onBonus, onCredits, onSecret }) {
     this.menuBonusUnlocked = Boolean(bonus);
     const screen = this.showScreen("menu", "menu", `

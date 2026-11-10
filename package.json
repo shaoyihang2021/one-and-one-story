@@ -1,6 +1,6 @@
 {
   "name": "one-and-one-story-web",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
   "description": "A faithful HTML5 edition of One and One Story, originally a 2011 Flash game by Mattia Traverso.",
   "type": "module",

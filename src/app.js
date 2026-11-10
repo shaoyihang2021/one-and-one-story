@@ -146,6 +146,16 @@ export class App {
       } else if (coopValid) {
         this.presentCoopEntry(Math.max(0, Math.min(10, Number(coopJump))));
       } else {
+        const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+        if (!reduceMotion && params.get("intro") !== "0") {
+          this.mode = "intro";
+          this.ui.showIntro({
+            onDone: () => this.presentMenu({ falling: false }),
+          });
+          await this.ui.fadeIn();
+          this.prepareAudio();
+          return;
+        }
         this.presentMenu({ falling: false });
       }
       await this.ui.fadeIn();

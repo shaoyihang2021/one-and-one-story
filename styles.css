@@ -787,6 +787,216 @@ body {
 .achievement-layer img { width: calc(var(--u) * 235); height: auto; }
 
 /* ------------------------------------------------------------------ */
+/* Opening splash (Armor Games and MaTX)                                */
+/* ------------------------------------------------------------------ */
+
+.screen.intro {
+  background: #000;
+}
+
+.intro-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.intro-ag {
+  animation: introFadeOut 0.7s ease-in 5.2s forwards;
+}
+
+.intro-swords {
+  position: absolute;
+  inset: 0;
+  animation: introSwordsOut 0.42s ease-in 1.55s forwards;
+}
+
+.intro-sword {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--u) * 40);
+  margin-left: calc(var(--u) * -20);
+  margin-top: calc(var(--u) * -82.5);
+  transform-origin: 50% 50%;
+  opacity: 0;
+  filter: drop-shadow(0 calc(var(--u) * 2) calc(var(--u) * 6) rgba(0, 0, 0, 0.8));
+}
+
+.intro-sword-left {
+  animation: introSwordLeft 1.05s cubic-bezier(0.18, 0.8, 0.22, 1) 0.15s both;
+}
+
+.intro-sword-right {
+  animation: introSwordRight 1.05s cubic-bezier(0.18, 0.8, 0.22, 1) 0.15s both;
+}
+
+@keyframes introSwordLeft {
+  0% { transform: translate(calc(var(--u) * -300), calc(var(--u) * 62)) rotate(-78deg); opacity: 0; }
+  18% { opacity: 1; }
+  100% { transform: translate(calc(var(--u) * -14), calc(var(--u) * -4)) rotate(-35deg); opacity: 1; }
+}
+
+@keyframes introSwordRight {
+  0% { transform: translate(calc(var(--u) * 300), calc(var(--u) * 62)) rotate(78deg); opacity: 0; }
+  18% { opacity: 1; }
+  100% { transform: translate(calc(var(--u) * 14), calc(var(--u) * -4)) rotate(35deg); opacity: 1; }
+}
+
+@keyframes introSwordsOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.intro-armor {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--u) * 232);
+  width: calc(var(--u) * 320);
+  transform: translate(-50%, -50%) scale(0.86);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: introArmorIn 0.75s ease-out 1.62s both;
+}
+
+@keyframes introArmorIn {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.86); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.intro-matx {
+  opacity: 0;
+  animation:
+    introFadeIn 1s ease-out 5.85s forwards,
+    introFadeOut 0.8s ease-in 11.15s forwards;
+}
+
+.intro-sky {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(32, 38, 44, 0.55), transparent 62%),
+    linear-gradient(180deg, #050505 0%, #070809 55%, #040404 100%);
+}
+
+.intro-buildings {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--u) * 42);
+  width: 100%;
+  height: calc(var(--u) * 210);
+  opacity: 0.9;
+}
+
+.intro-rain {
+  position: absolute;
+  inset: -20%;
+  opacity: 0.55;
+  background-image:
+    repeating-linear-gradient(104deg, transparent 0 calc(var(--u) * 23), rgba(186, 201, 212, 0.1) calc(var(--u) * 23) calc(var(--u) * 24), transparent calc(var(--u) * 24) calc(var(--u) * 46)),
+    repeating-linear-gradient(99deg, transparent 0 calc(var(--u) * 36), rgba(150, 170, 185, 0.07) calc(var(--u) * 36) calc(var(--u) * 37), transparent calc(var(--u) * 37) calc(var(--u) * 68));
+  background-size: calc(var(--u) * 210) calc(var(--u) * 250), calc(var(--u) * 330) calc(var(--u) * 310);
+  animation: introRain 0.55s linear infinite;
+}
+
+@keyframes introRain {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: calc(var(--u) * -120) calc(var(--u) * 250), calc(var(--u) * -80) calc(var(--u) * 310); }
+}
+
+.intro-umbrella {
+  position: absolute;
+  left: calc(var(--u) * 58);
+  bottom: calc(var(--u) * 22);
+  width: calc(var(--u) * 168);
+  height: calc(var(--u) * 182);
+  opacity: 0;
+  filter: drop-shadow(0 calc(var(--u) * 6) calc(var(--u) * 10) rgba(0, 0, 0, 0.9));
+  animation: introUmbrellaIn 1.4s ease-out 6.3s both;
+}
+
+@keyframes introUmbrellaIn {
+  0% { opacity: 0; transform: translateY(calc(var(--u) * 16)) rotate(-4deg); }
+  100% { opacity: 1; transform: translateY(0) rotate(0deg); }
+}
+
+.intro-flash {
+  position: absolute;
+  inset: 0;
+  background: #dbe8f2;
+  opacity: 0;
+  animation: introFlash 1.6s ease-out 6.55s both;
+}
+
+@keyframes introFlash {
+  0% { opacity: 0; }
+  3% { opacity: 0.55; }
+  7% { opacity: 0.04; }
+  11% { opacity: 0.32; }
+  17% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+.intro-matx-logo {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--u) * 228);
+  width: calc(var(--u) * 185);
+  transform: translate(-50%, -50%) scale(0.94);
+  opacity: 0;
+  filter: drop-shadow(0 0 calc(var(--u) * 10) rgba(236, 246, 255, 0.35));
+  animation: introMatxLogo 2.6s ease-out 6.9s both;
+}
+
+@keyframes introMatxLogo {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.94); }
+  12% { opacity: 1; }
+  20% { opacity: 0.15; }
+  27% { opacity: 1; }
+  38% { opacity: 0.45; }
+  48% { opacity: 1; }
+  60% { opacity: 0.7; }
+  72% { opacity: 1; }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.intro-skip {
+  position: absolute;
+  right: calc(var(--u) * 18);
+  bottom: calc(var(--u) * 12);
+  z-index: 4;
+  padding: calc(var(--u) * 6) calc(var(--u) * 10);
+  border: 0;
+  background: transparent;
+  color: rgba(242, 232, 213, 0.42);
+  font-family: var(--font);
+  font-size: max(calc(var(--u) * 13), 10px);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.intro-skip:hover,
+.intro-skip:focus-visible {
+  color: rgba(242, 232, 213, 0.9);
+}
+
+.screen.intro.is-finishing {
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+@keyframes introFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes introFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ------------------------------------------------------------------ */
 /* Title cards, quote, ending                                           */
 /* ------------------------------------------------------------------ */
 

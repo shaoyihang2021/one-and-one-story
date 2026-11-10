@@ -56,7 +56,7 @@ async function collectFiles({ excludeChinese }) {
   const files = {};
   for (const file of assetFiles) {
     const key = relative(ROOT, file).split("\\").join("/");
-    if (excludeChinese && (key.startsWith("assets/img/zh/") || key.includes("handfont-zh") || key.includes("OFL-MaShanZheng"))) {
+    if (excludeChinese && (key.startsWith("assets/img/zh/") || key.includes("longcang-zh") || key.includes("OFL-LongCang"))) {
       continue;
     }
     const extension = extname(file).toLowerCase();
